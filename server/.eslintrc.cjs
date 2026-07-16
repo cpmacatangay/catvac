@@ -1,0 +1,21 @@
+module.exports = {
+  env: { node: true, es2024: true },
+  extends: ['eslint:recommended', 'prettier'],
+  parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+  rules: {
+    'max-lines': ['warn', { max: 300, skipBlankLines: true, skipComments: true }],
+    'max-lines-per-function': ['warn', { max: 50, skipBlankLines: true, skipComments: true }],
+    'max-params': ['warn', { max: 4 }],
+    complexity: ['warn', { max: 10 }],
+    'max-depth': ['warn', { max: 3 }],
+    'max-nested-callbacks': ['warn', { max: 3 }],
+    'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    'no-undef': 'error',
+    'no-console': ['error', { allow: ['warn', 'error'] }],
+    'no-var': 'error',
+    'prefer-const': 'error',
+    'no-duplicate-imports': 'error',
+    'no-throw-literal': 'error',
+    camelcase: ['warn', { properties: 'never', ignoreDestructuring: true }],
+  },
+}
