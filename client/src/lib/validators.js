@@ -1,18 +1,27 @@
 import { z } from 'zod'
 
+const passwordRule = z
+  .string()
+  .min(8, 'Password must be at least 8 characters')
+  .regex(/[A-Z]/, 'Password needs an uppercase letter')
+  .regex(/[a-z]/, 'Password needs a lowercase letter')
+  .regex(/[0-9]/, 'Password needs a number')
+
 export const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email'),
+  email: z.string().email('Enter a valid email'),
   password: z.string().min(1, 'Password is required'),
 })
 
-export const signupSchema = z.object({
-  email: z.string().email('Please enter a valid email'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-})
+export const signupSchema = z
+  .object({
+    email: z.string().email('Enter a valid email'),
+    password: passwordRule,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  })
 
 export const catSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
