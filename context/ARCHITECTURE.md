@@ -441,8 +441,6 @@ services:
   web:
     build: ./client
     ports: ["5173:5173"]
-    environment:
-      - VITE_API_URL=http://localhost:3000/api/v1
     depends_on: [api]
 
   mongo:
@@ -495,7 +493,7 @@ graph TB
 
 | Component | Host | Notes |
 |---|---|---|
-| **React SPA** | Vercel | Static deployment, client-side routing via `rewrites`, env: `VITE_API_URL` |
+| **React SPA** | Vercel | Static deployment, client-side routing via `rewrites`, env: `VITE_API_URL` (set to your production API origin, same-origin via `rewrites` recommended over CORS) |
 | **Express API** | Railway / Render | Single Node process. `SMTP_*` env, `MONGODB_URI`, `JWT_SECRET`, `SENTRY_DSN` |
 | **MongoDB** | Atlas M0 | IP whitelist (Railway egress), `MONGODB_URI` in API env |
 | **SMTP** | Brevo / SendGrid | API key in env. Dev: Mailhog locally |

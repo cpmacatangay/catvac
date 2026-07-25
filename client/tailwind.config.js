@@ -12,6 +12,18 @@ export default {
         heading: ['Fredoka', 'sans-serif'],
         body: ['Nunito', 'sans-serif'],
       },
+      fontSize: {
+        hero: ['44px', { lineHeight: '1.12', letterSpacing: '-0.01em' }],
+        h1: ['34px', { lineHeight: '1.18' }],
+        h2: ['26px', { lineHeight: '1.2' }],
+        h3: ['22px', { lineHeight: '1.3' }],
+        subtitle: ['18px', { lineHeight: '1.4' }],
+        body: ['17px', { lineHeight: '1.55' }],
+        'body-sm': ['15px', { lineHeight: '1.5' }],
+        caption: ['14px', { lineHeight: '1.4', letterSpacing: '0.02em' }],
+        badge: ['13px', { lineHeight: '1.3', letterSpacing: '0.03em' }],
+        button: ['17px', { lineHeight: '1' }],
+      },
       boxShadow: {
         card: '0 2px 8px rgba(0,0,0,0.06)',
         'card-hover': '0 4px 16px rgba(0,0,0,0.10)',

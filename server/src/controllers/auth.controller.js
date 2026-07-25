@@ -2,7 +2,7 @@ import * as authService from '../services/auth.service.js'
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
+  secure: process.env.NODE_ENV === 'production' && (process.env.FRONTEND_ORIGIN || '').startsWith('https://'),
   sameSite: 'lax',
   path: '/',
   maxAge: 7 * 24 * 60 * 60 * 1000,

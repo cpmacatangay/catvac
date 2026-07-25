@@ -7,15 +7,26 @@ const STATUS_STYLES = {
   snoozed: 'bg-purple-100 text-purple-700 border border-purple-200',
 }
 
+const STATUS_DOTS = {
+  'on-track': 'bg-green-500',
+  upcoming: 'bg-blue-500',
+  due: 'bg-amber-500',
+  overdue: 'bg-red-500',
+  administered: 'bg-gray-400',
+  snoozed: 'bg-purple-500',
+}
+
 export function StatusPill({ status, dueDate }) {
   const style = STATUS_STYLES[status] || STATUS_STYLES['on-track']
+  const dot = STATUS_DOTS[status] || STATUS_DOTS['on-track']
   const label = status === 'administered' ? 'Done' : status === 'on-track' ? 'OK' : status
 
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${style}`}
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-badge font-bold uppercase tracking-wider ${style}`}
       aria-label={`Status: ${status}${dueDate ? `, due ${new Date(dueDate).toLocaleDateString()}` : ''}`}
     >
+      <span className={`h-2 w-2 rounded-full ${dot}`} aria-hidden />
       {label}
     </span>
   )

@@ -4,7 +4,7 @@ import { startOfDay, differenceInDays } from 'date-fns'
 const vaccineSchema = new mongoose.Schema(
   {
     ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    catId: { type: mongoose.Schema.Types.ObjectId, ref: 'Cat', required: true, index: true },
+    catId: { type: mongoose.Schema.Types.ObjectId, ref: 'Cat', required: true },
     name: { type: String, required: true, trim: true, minlength: 1, maxlength: 100 },
     dueDate: { type: Date, required: true },
     intervalMonths: { type: Number, default: null, min: 1, max: 120 },

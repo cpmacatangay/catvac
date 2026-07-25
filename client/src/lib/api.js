@@ -4,8 +4,8 @@ export async function api(path, options = {}) {
   const url = `${BASE_URL}${path}`
   const res = await fetch(url, {
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...options.headers },
     ...options,
+    headers: { 'Content-Type': 'application/json', ...options.headers },
   })
 
   if (res.status === 204) return null

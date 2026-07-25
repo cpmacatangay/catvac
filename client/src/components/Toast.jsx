@@ -16,8 +16,8 @@ export function Toast({ message, type = 'success', onClose }) {
   const bg = type === 'error' ? 'border-red-500' : 'border-primary'
 
   return (
-    <div className={`fixed top-4 right-4 bg-white shadow-elevated rounded-lg p-4 max-w-sm border-l-4 ${bg} z-50`}>
-      <p className="text-sm text-gray-800">{message}</p>
+    <div className={`fixed top-4 right-4 bg-white shadow-elevated rounded-lg p-5 max-w-md border-l-4 ${bg} z-50`}>
+      <p className="text-body-sm text-gray-800">{message}</p>
     </div>
   )
 }

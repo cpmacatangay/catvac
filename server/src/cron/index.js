@@ -1,6 +1,5 @@
 import cron from 'node-cron'
 import { createTransport } from 'nodemailer'
-import pino from 'pino'
 import { ReminderService } from '../services/reminder.service.js'
 
 function createMailer() {
@@ -13,20 +12,24 @@ function createMailer() {
   })
 }
 
+const cronLogger = {
+  info: (msg) => console.log(`[reminder-engine] ${msg}`),
+  error: (msg) => console.error(`[reminder-engine] ${msg}`),
+}
+
 export function startReminderEngine() {
-  const logger = pino().child({ module: 'reminder-engine' })
   const mailer = createMailer()
-  const reminderService = new ReminderService(mailer, logger)
+  const reminderService = new ReminderService(mailer, cronLogger)
 
   cron.schedule('0 2 * * *', async () => {
-    logger.info('Starting nightly reminder scan')
+    cronLogger.info('Starting nightly reminder scan')
     try {
       const summary = await reminderService.processReminders()
-      logger.info({ summary }, 'Reminder scan complete')
+      cronLogger.info(`Reminder scan complete — checked: ${summary.checked}, sent: ${summary.sent}, skipped: ${summary.skipped}, failed: ${summary.failed}`)
     } catch (err) {
-      logger.error({ err }, 'Reminder scan failed')
+      cronLogger.error(`Reminder scan failed: ${err.message}`)
     }
   })
 
-  logger.info('Reminder engine scheduled for 02:00 daily')
+  console.log('[reminder-engine] Scheduled for 02:00 daily')
 }

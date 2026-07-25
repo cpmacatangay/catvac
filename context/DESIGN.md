@@ -108,17 +108,17 @@ Both served via Google Fonts, self-hosted fallback recommended via `@font-face`.
 ### Type Scale
 
 | Level | Size (px/rem) | Weight | Line Height | Letter-spacing | Font |
-|---|---|---|---|---|---|
-| Hero (h1) | 36 / 2.25rem | 600 | 1.15 | -0.01em | Fredoka |
-| Heading 1 (h2) | 28 / 1.75rem | 600 | 1.2 | normal | Fredoka |
-| Heading 2 (h3) | 22 / 1.375rem | 600 | 1.25 | normal | Fredoka |
-| Heading 3 (h4) | 18 / 1.125rem | 600 | 1.3 | normal | Fredoka |
-| Subtitle | 16 / 1rem | 600 | 1.4 | normal | Nunito |
-| Body | 15 / 0.9375rem | 400 | 1.5 | normal | Nunito |
-| Body small | 13 / 0.8125rem | 400 | 1.5 | normal | Nunito |
-| Caption / label | 12 / 0.75rem | 600 | 1.4 | +0.02em | Nunito |
-| Badge / status | 11 / 0.6875rem | 700 | 1.3 | +0.03em | Nunito |
-| Button | 15 / 0.9375rem | 600 | 1 | normal | Nunito |
+|---|---|---|---|---|---|---|
+| Hero (h1) | 44 / 2.75rem | 600 | 1.12 | -0.01em | Fredoka |
+| Heading 1 (h2) | 34 / 2.125rem | 600 | 1.18 | normal | Fredoka |
+| Heading 2 (h3) | 26 / 1.625rem | 600 | 1.2 | normal | Fredoka |
+| Heading 3 (h4) | 22 / 1.375rem | 600 | 1.3 | normal | Fredoka |
+| Subtitle | 18 / 1.125rem | 600 | 1.4 | normal | Nunito |
+| Body | 17 / 1.0625rem | 400 | 1.55 | normal | Nunito |
+| Body small | 15 / 0.9375rem | 400 | 1.5 | normal | Nunito |
+| Caption / label | 14 / 0.875rem | 600 | 1.4 | +0.02em | Nunito |
+| Badge / status | 13 / 0.8125rem | 700 | 1.3 | +0.03em | Nunito |
+| Button | 17 / 1.0625rem | 600 | 1 | normal | Nunito |
 
 ### Paragraph
 - Max width: 65ch (body)
@@ -162,9 +162,9 @@ No table layouts anywhere. Each cat renders as a **card** on every viewport.
 ### Dashboard grid
 | Breakpoint | Columns | Max width | Gap |
 |---|---|---|---|
-| Mobile (< 640px) | 1 | 100% | `gap-4` |
-| Tablet (640–1023px) | 2 | 640px max-container | `gap-4` |
-| Desktop (1024px+) | 3 | 1200px max-container | `gap-6` |
+| Mobile (< 640px) | 1 | 100% | `gap-5` |
+| Tablet (640–1023px) | 2 | 640px max-container | `gap-5` |
+| Desktop (1024px+) | 3 | 1200px max-container | `gap-5` |
 
 ### Cat Card anatomy
 ```
@@ -217,9 +217,11 @@ No table layouts anywhere. Each cat renders as a **card** on every viewport.
 
 | Token | px | Tailwind | Usage |
 |---|---|---|---|
-| sm | 4 | `rounded-sm` | Input fields, small badges |
-| md | 8 | `rounded-md` | Buttons, secondary cards |
-| lg | 12 | `rounded-lg` | Main cat cards, modals |
+| Token | px | Tailwind | Usage |
+|---|---|---|---|---|
+| sm | 4 | `rounded-sm` | Small badges, decorative |
+| md | 8 | `rounded-md` | Secondary cards |
+| lg | 12 | `rounded-lg` | Buttons, main cat cards, modals, input fields |
 | xl | 16 | `rounded-xl` | Hero sections, large dialogs |
 | full | 9999 | `rounded-full` | Pills, avatars, status dots |
 
@@ -241,22 +243,23 @@ Shadows use `rgba(0,0,0,...)` to tint naturally on any surface.
 ## 8. Iconography
 
 - **Source:** [Heroicons](https://heroicons.com) (outline set) — consistent, MIT-licensed, Tailwind-native.
-- **Icon sizes:** `h-5 w-5` (default inline), `h-6 w-6` (actions), `h-8 w-8` (avatars).
+- **Icon sizes:** `h-6 w-6` (default inline with text in buttons / icon-only buttons), `h-5 w-5` (compact inline), `h-8 w-8` (avatars). Import from `@heroicons/react/24/outline`.
 - **Color:** Inherits text color or `text-primary` / `text-accent` as needed.
 - **Cat avatar placeholder:** A small purple silhouette icon (Heroicons does not include a cat — use a custom SVG or the generic `user-circle` with cat color).
 
 ### Key icons used
 | Context | Icon | Size |
 |---|---|---|
-| Add cat | `plus-circle` | h-6 w-6 |
-| Add vaccine | `plus-small` | h-5 w-5 |
-| Edit cat | `pencil-square` | h-5 w-5 |
-| Delete cat/vaccine | `trash` | h-5 w-5 |
-| Mark administered | `check-circle` | h-5 w-5 |
-| Snooze | `clock` | h-5 w-5 |
-| Dashboard | `home` | h-6 w-6 |
-| Settings | `cog-6-tooth` | h-6 w-6 |
-| Logout | `arrow-right-on-rectangle` | h-6 w-6 |
+| Add cat | `PlusIcon` | h-5 w-5 (inline) |
+| Add vaccine | `PlusIcon` | h-5 w-5 (inline) |
+| Edit cat | `PencilSquareIcon` | h-5 w-5 (inline) |
+| Delete cat/vaccine | `TrashIcon` | h-5 w-5 (inline) / h-6 w-6 (icon-only) |
+| Mark administered | `CheckCircleIcon` | h-6 w-6 (icon-only) |
+| Snooze | `ArrowPathIcon` | h-6 w-6 (icon-only) |
+| Dashboard | `HomeIcon` | h-6 w-6 |
+| Settings | `Cog6ToothIcon` | h-6 w-6 |
+| Logout | `ArrowRightOnRectangleIcon` | h-6 w-6 |
+| Back | `ArrowLeftIcon` | h-5 w-5 (inline) |
 
 ---
 
@@ -290,20 +293,23 @@ No keyframe-heavy or distracting animations. Purpose: smooth feedback, not showm
 | Secondary (outline) | `border border-gray-300 text-gray-700 hover:bg-gray-50` | `rounded-md` |
 | Ghost | `text-gray-600 hover:text-gray-800 hover:bg-gray-100` | `rounded-md` |
 | Danger | `bg-red-600 text-white hover:bg-red-700` | `rounded-md` |
-| Icon | `p-2 text-gray-500 hover:text-primary hover:bg-violet-50` | `rounded-md` |
+| Icon | `p-2.5 text-gray-500 hover:text-primary hover:bg-violet-50` | `rounded-lg` |
 
 - All buttons: `focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2`
-- Min height: 40px (tap target).
+- Min height: 48px (tap target, WCAG >=44px).
+- Text buttons: `px-5 gap-2 font-semibold text-button`.
+- Icon buttons: `p-2.5` with `h-6 w-6` icon children = 44px hit target.
 - Disabled: `opacity-50 cursor-not-allowed`.
 
 ### Input Fields
 
 - Border: `border border-gray-300`, on focus: `border-primary ring-1 ring-primary`
-- Padding: `px-3 py-2`
+- Padding: `px-4 py-3`
+- Border radius: `rounded-lg`
 - Background: white
 - Placeholder: `text-gray-400`
-- Error: `border-red-500 ring-1 ring-red-500`, helper text in `text-red-600 text-sm`
-- Label: `text-sm font-semibold text-gray-700 mb-1`
+- Error: `border-red-500 ring-1 ring-red-500`, helper text in `text-red-600 text-body-sm`
+- Label: `text-caption font-semibold text-gray-700 mb-1 uppercase tracking-wider`
 
 ### Status Pills (badges)
 
@@ -314,7 +320,7 @@ No keyframe-heavy or distracting animations. Purpose: smooth feedback, not showm
 | Overdue | `bg-red-100 text-red-700 border border-red-200` | `exclamation-circle` |
 | Administered | `bg-green-100 text-green-700 border border-green-200` | `check` |
 
-Pills: `inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider`
+Pills: `inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-badge font-bold uppercase tracking-wider` with a leading `h-2 w-2 rounded-full` color dot (status indicator, `aria-hidden`).
 
 ### Toast / Notification
 
@@ -327,7 +333,7 @@ Pills: `inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] fo
 ```
 - Background: white with left purple accent border
 - Shadow: `shadow-elevated`
-- Max width: 400px
+- Max width: 448px (`max-w-md`)
 - Dissmiss: auto 5s, or X button, or tap
 
 ### Modals

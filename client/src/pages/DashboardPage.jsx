@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { PlusIcon } from '@heroicons/react/24/outline'
 import { useDashboard } from '../hooks/useDashboard.js'
 import { useCreateCat } from '../hooks/useCats.js'
 import { useAuth } from '../hooks/useAuth.js'
+import { Button } from '../components/Button.jsx'
 import { CatCard } from '../components/CatCard.jsx'
 
 const EMPTY_FORM = { name: '', breed: '', sex: '', notes: '' }
@@ -40,73 +42,73 @@ export function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <p className="text-gray-500 text-body">Loading dashboard...</p>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="bg-red-100 text-red-700 p-4 rounded-lg">{error.message}</div>
+      <div className="min-h-screen flex items-center justify-center px-4">
+          <div className="bg-red-100 text-red-700 p-5 rounded-lg w-full max-w-md">{error.message}</div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-      <header className="flex items-center justify-between">
+    <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-8 py-8 space-y-6 md:space-y-8">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-heading text-2xl text-gray-800">My Cats</h1>
-          <p className="text-sm text-gray-500">Vaccine dashboard</p>
+          <h1 className="font-heading text-h1 text-gray-800">My Cats</h1>
+          <p className="text-subtitle text-gray-500">Vaccine dashboard</p>
         </div>
         <div className="flex items-center gap-3">
-          <button
+          <Button
+            variant="primary"
             onClick={() => { setShowForm(true); setForm(EMPTY_FORM) }}
-            className="text-sm text-primary hover:text-primary-hover font-semibold"
           >
-            + Add Cat
-          </button>
-          <button onClick={logout} className="text-sm text-gray-500 hover:text-gray-700">
+            <PlusIcon className="h-5 w-5" aria-hidden /> Add Cat
+          </Button>
+          <Button variant="ghost" onClick={logout}>
             Log out
-          </button>
+          </Button>
         </div>
       </header>
 
       {showForm && (
         <form
           onSubmit={handleAddCat}
-          className="bg-white rounded-lg p-6 shadow-card space-y-4"
+          className="bg-white rounded-lg p-4 md:p-6 shadow-card space-y-4"
         >
-          <h3 className="font-heading text-lg text-gray-800">New Cat</h3>
-          {formError && <div className="text-red-600 text-sm">{formError}</div>}
-          <div className="grid grid-cols-2 gap-4">
+          <h3 className="font-heading text-h2 text-gray-800">New Cat</h3>
+          {formError && <div className="text-red-600 text-body-sm">{formError}</div>}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Name *</label>
+              <label className="block font-semibold text-caption text-gray-700 mb-1 uppercase tracking-wider">Name *</label>
               <input
                 type="text"
                 value={form.name}
                 onChange={set('name')}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary"
+                className="w-full text-body border border-gray-300 rounded-lg px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Breed</label>
+              <label className="block font-semibold text-caption text-gray-700 mb-1 uppercase tracking-wider">Breed</label>
               <input
                 type="text"
                 value={form.breed}
                 onChange={set('breed')}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary"
+                className="w-full text-body border border-gray-300 rounded-lg px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary"
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Sex</label>
+              <label className="block font-semibold text-caption text-gray-700 mb-1 uppercase tracking-wider">Sex</label>
               <select
                 value={form.sex}
                 onChange={set('sex')}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary"
+                className="w-full text-body border border-gray-300 rounded-lg px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary"
               >
                 <option value="">—</option>
                 <option value="M">Male</option>
@@ -114,32 +116,28 @@ export function DashboardPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Notes</label>
+              <label className="block font-semibold text-caption text-gray-700 mb-1 uppercase tracking-wider">Notes</label>
               <input
                 type="text"
                 value={form.notes}
                 onChange={set('notes')}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary"
+                className="w-full text-body border border-gray-300 rounded-lg px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary"
                 maxLength={500}
               />
             </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              className="bg-primary text-white rounded-md px-4 py-2 font-semibold hover:bg-primary-hover"
-              disabled={createCat.isPending}
-            >
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button type="submit" variant="primary" disabled={createCat.isPending} className="w-full sm:w-auto">
               {createCat.isPending ? 'Adding...' : 'Add Cat'}
-            </button>
-            <button type="button" onClick={() => setShowForm(false)} className="text-gray-500 px-4 py-2">
+            </Button>
+            <Button variant="secondary" onClick={() => setShowForm(false)} className="w-full sm:w-auto">
               Cancel
-            </button>
+            </Button>
           </div>
         </form>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {cats?.map(({ cat, vaccines }) => (
           <CatCard
             key={cat._id}
@@ -152,8 +150,8 @@ export function DashboardPage() {
 
       {(!cats || cats.length === 0) && (
         <div className="text-center py-12 text-gray-400">
-          <p className="text-lg">No cats yet</p>
-          <p className="text-sm">Add a cat to get started</p>
+          <p className="text-h2">No cats yet</p>
+          <p className="text-body-sm">Add a cat to get started</p>
         </div>
       )}
     </div>

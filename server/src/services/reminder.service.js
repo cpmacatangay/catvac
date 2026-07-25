@@ -65,7 +65,7 @@ export class ReminderService {
 
           summary.sent++
         } catch (err) {
-          this.logger.error({ err, vaccineId: vaccine._id, type }, 'reminder send failed')
+          this.logger.error(`Reminder send failed for vaccine ${vaccine._id} (${type}): ${err.message}`)
           await ReminderLog.create({
             vaccineId: vaccine._id,
             type,
@@ -79,7 +79,7 @@ export class ReminderService {
       }
     }
 
-    this.logger.info({ summary }, 'reminder-run')
+    this.logger.info(`Reminder run — checked: ${summary.checked}, sent: ${summary.sent}, skipped: ${summary.skipped}, failed: ${summary.failed}`)
     return summary
   }
 
