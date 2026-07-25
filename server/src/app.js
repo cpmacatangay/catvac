@@ -13,6 +13,7 @@ import { vaccineRoutes } from './routes/vaccine.routes.js'
 import { dashboardRoutes } from './routes/dashboard.routes.js'
 import { unsubscribeRoutes } from './routes/unsubscribe.routes.js'
 import { authMiddleware } from './middleware/auth.middleware.js'
+import { deviceRoutes } from './routes/device.routes.js'
 import { errorHandler } from './middleware/error.middleware.js'
 import { notFoundHandler } from './middleware/notFound.middleware.js'
 
@@ -66,6 +67,7 @@ export function createApp() {
   app.use('/api/v1/cats', catRoutes)
   app.use('/api/v1/vaccines', vaccineRoutes)
   app.use('/api/v1/dashboard', dashboardRoutes)
+  app.use('/api/v1/devices', deviceRoutes)
 
   app.get('/api/v1/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString(), uptime: process.uptime() })

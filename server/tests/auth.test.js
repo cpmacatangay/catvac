@@ -51,6 +51,8 @@ describe('Auth API', () => {
         .expect(201)
 
       expect(res.body.user).toEqual(MOCK_USER)
+      expect(res.body.token).toBeDefined()
+      expect(typeof res.body.token).toBe('string')
       expect(res.headers['set-cookie']).toBeDefined()
       const cookie = res.headers['set-cookie'][0]
       expect(cookie).toContain('HttpOnly')
@@ -120,6 +122,8 @@ describe('Auth API', () => {
         .expect(200)
 
       expect(res.body.user).toEqual(MOCK_USER)
+      expect(res.body.token).toBeDefined()
+      expect(typeof res.body.token).toBe('string')
       expect(res.headers['set-cookie']).toBeDefined()
       expect(authService.login).toHaveBeenCalledWith('test@catvac.app', 'Password1')
     })
@@ -172,7 +176,20 @@ describe('Auth API', () => {
       expect(authService.getMe).toHaveBeenCalledWith(MOCK_USER.id)
     })
 
-    it('returns 401 when no cookie is present', async () => {
+    it('returns user when valid Bearer token is provided (mobile flow)', async () => {
+      vi.mocked(authService.getMe).mockResolvedValue(MOCK_USER)
+      const token = generateToken()
+
+      const res = await request(app)
+        .get('/api/v1/auth/me')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200)
+
+      expect(res.body.user).toEqual(MOCK_USER)
+      expect(authService.getMe).toHaveBeenCalledWith(MOCK_USER.id)
+    })
+
+    it('returns 401 when no auth (cookie or Bearer) is present', async () => {
       const res = await request(app)
         .get('/api/v1/auth/me')
         .expect(401)

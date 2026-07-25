@@ -1,6 +1,8 @@
 import cron from 'node-cron'
 import { createTransport } from 'nodemailer'
 import { ReminderService } from '../services/reminder.service.js'
+import { PushService } from '../services/push.service.js'
+import { createFcmClient } from '../lib/fcmClient.js'
 
 function createMailer() {
   return createTransport({
@@ -19,7 +21,23 @@ const cronLogger = {
 
 export function startReminderEngine() {
   const mailer = createMailer()
-  const reminderService = new ReminderService(mailer, cronLogger)
+
+  let pushService = null
+  const fcmClientPromise = createFcmClient()
+  if (fcmClientPromise) {
+    fcmClientPromise
+      .then((messaging) => {
+        if (messaging) {
+          pushService = new PushService(messaging, cronLogger)
+          cronLogger.info('FCM initialized for push notifications')
+        }
+      })
+      .catch((err) => {
+        cronLogger.error(`FCM initialization failed: ${err.message}. Push disabled.`)
+      })
+  }
+
+  const reminderService = new ReminderService(mailer, cronLogger, pushService)
 
   cron.schedule('0 2 * * *', async () => {
     cronLogger.info('Starting nightly reminder scan')

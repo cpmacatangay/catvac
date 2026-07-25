@@ -6,14 +6,15 @@ import { Cat } from '../models/cat.model.js'
 import { escapeHtml } from '../lib/escape-html.js'
 
 export class ReminderService {
-  constructor(mailer, logger) {
+  constructor(mailer, logger, pushService = null) {
     this.mailer = mailer
     this.logger = logger
+    this.pushService = pushService
   }
 
   async processReminders() {
     const today = startOfDay(new Date())
-    const summary = { checked: 0, sent: 0, skipped: 0, failed: 0 }
+    const summary = { checked: 0, emailSent: 0, emailSkipped: 0, emailFailed: 0, pushSent: 0, pushSkipped: 0, pushFailed: 0 }
 
     const vaccines = await Vaccine.find({
       administered: false,
@@ -29,58 +30,127 @@ export class ReminderService {
       const windows = this.getReminderWindows(vaccine, today, user.prefs?.leadDays ?? 7)
 
       for (const { type, windowDate, windowEnd } of windows) {
-        const shouldSend = this.shouldSendReminder(type, user.prefs)
-        if (!shouldSend) {
-          summary.skipped++
-          continue
-        }
-
         if (today < windowDate || today > windowEnd) continue
 
-        const existing = await ReminderLog.findOne({
-          vaccineId: vaccine._id,
-          type,
-          windowDate,
-        })
-
-        if (existing) {
-          summary.skipped++
-          continue
-        }
-
-        try {
-          await this.mailer.send({
-            to: user.email,
-            subject: this.getSubject(type, vaccine),
-            html: this.getTemplate(type, vaccine, user),
-          })
-
-          await ReminderLog.create({
-            vaccineId: vaccine._id,
-            type,
-            windowDate,
-            sentAt: new Date(),
-            status: 'sent',
-          })
-
-          summary.sent++
-        } catch (err) {
-          this.logger.error(`Reminder send failed for vaccine ${vaccine._id} (${type}): ${err.message}`)
-          await ReminderLog.create({
-            vaccineId: vaccine._id,
-            type,
-            windowDate,
-            sentAt: new Date(),
-            status: 'failed',
-            error: err.message,
-          })
-          summary.failed++
+        await this.sendEmailReminder(vaccine, user, type, windowDate, summary)
+        if (this.pushService) {
+          await this.sendPushReminder(vaccine, user, type, windowDate, summary)
         }
       }
     }
 
-    this.logger.info(`Reminder run — checked: ${summary.checked}, sent: ${summary.sent}, skipped: ${summary.skipped}, failed: ${summary.failed}`)
+    this.logger.info(
+      `Reminder run — checked: ${summary.checked}, ` +
+      `email sent: ${summary.emailSent}, skipped: ${summary.emailSkipped}, failed: ${summary.emailFailed}, ` +
+      `push sent: ${summary.pushSent}, skipped: ${summary.pushSkipped}, failed: ${summary.pushFailed}`
+    )
     return summary
+  }
+
+  async sendEmailReminder(vaccine, user, type, windowDate, summary) {
+    const shouldSend = this.shouldSendReminder(type, user.prefs)
+    if (!shouldSend) {
+      summary.emailSkipped++
+      return
+    }
+
+    const existing = await ReminderLog.findOne({
+      vaccineId: vaccine._id,
+      type,
+      windowDate,
+      channel: 'email',
+    })
+
+    if (existing) {
+      summary.emailSkipped++
+      return
+    }
+
+    try {
+      await this.mailer.send({
+        to: user.email,
+        subject: this.getSubject(type, vaccine),
+        html: this.getTemplate(type, vaccine, user),
+      })
+
+      await ReminderLog.create({
+        vaccineId: vaccine._id,
+        type,
+        windowDate,
+        channel: 'email',
+        sentAt: new Date(),
+        status: 'sent',
+      })
+
+      summary.emailSent++
+    } catch (err) {
+      this.logger.error(`Email send failed for vaccine ${vaccine._id} (${type}): ${err.message}`)
+      await ReminderLog.create({
+        vaccineId: vaccine._id,
+        type,
+        windowDate,
+        channel: 'email',
+        sentAt: new Date(),
+        status: 'failed',
+        error: err.message,
+      })
+      summary.emailFailed++
+    }
+  }
+
+  async sendPushReminder(vaccine, user, type, windowDate, summary) {
+    const existing = await ReminderLog.findOne({
+      vaccineId: vaccine._id,
+      type,
+      windowDate,
+      channel: 'push',
+    })
+
+    if (existing) {
+      summary.pushSkipped++
+      return
+    }
+
+    try {
+      const result = await this.pushService.send(vaccine, type, user._id)
+
+      if (result.sent > 0) {
+        await ReminderLog.create({
+          vaccineId: vaccine._id,
+          type,
+          windowDate,
+          channel: 'push',
+          sentAt: new Date(),
+          status: 'sent',
+        })
+        summary.pushSent += result.sent
+      }
+
+      if (result.failed > 0) {
+        await ReminderLog.create({
+          vaccineId: vaccine._id,
+          type,
+          windowDate,
+          channel: 'push',
+          sentAt: new Date(),
+          status: 'failed',
+          error: `Push failed for ${result.failed} devices`,
+        })
+        summary.pushFailed += result.failed
+      }
+    } catch (err) {
+      this.logger.error(`Push send failed for vaccine ${vaccine._id} (${type}): ${err.message}`)
+      await ReminderLog.create({
+        vaccineId: vaccine._id,
+        type,
+        windowDate,
+        channel: 'push',
+        sentAt: new Date(),
+        status: 'failed',
+        error: err.message,
+      })
+      summary.pushFailed++
+    }
   }
 
   getReminderWindows(vaccine, today, leadDays) {
@@ -113,6 +183,11 @@ export class ReminderService {
     if (type === 'due' && prefs.receiveDue === false) return false
     if (type === 'overdue' && prefs.receiveOverdue === false) return false
     return true
+  }
+
+  shouldSendPush(prefs) {
+    if (!prefs) return true
+    return prefs.receivePush !== false
   }
 
   getSubject(type, vaccine) {

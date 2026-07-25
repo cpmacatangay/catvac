@@ -31,7 +31,7 @@ export function validateEnv() {
 export const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   JWT_SECRET: process.env.JWT_SECRET,
-  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '30d',
   UNSUBSCRIBE_SECRET: process.env.UNSUBSCRIBE_SECRET,
   FRONTEND_ORIGIN: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
   SMTP_HOST: process.env.SMTP_HOST || 'mailhog',

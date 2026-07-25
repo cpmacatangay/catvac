@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken'
 import { UnauthorizedError } from '../lib/errors.js'
 
 export function authMiddleware(req, _res, next) {
-  const token = req.cookies?.token
+  const token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '')
   if (!token) {
     return next(new UnauthorizedError('Not authenticated'))
   }

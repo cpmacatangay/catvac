@@ -13,7 +13,7 @@ export async function signup(req, res, next) {
     const { token, user } = await authService.signup(req.body.email, req.body.password)
     req.log.info({ userId: user.id, email: user.email }, 'signup success')
     res.cookie('token', token, COOKIE_OPTIONS)
-    res.status(201).json({ user })
+    res.status(201).json({ user, token })
   } catch (err) {
     req.log.warn({ email: req.body.email, error: err.message }, 'signup failed')
     next(err)
@@ -25,7 +25,7 @@ export async function login(req, res, next) {
     const { token, user } = await authService.login(req.body.email, req.body.password)
     req.log.info({ userId: user.id, email: user.email }, 'login success')
     res.cookie('token', token, COOKIE_OPTIONS)
-    res.json({ user })
+    res.json({ user, token })
   } catch (err) {
     req.log.warn({ email: req.body.email, error: err.message }, 'login failed')
     next(err)
