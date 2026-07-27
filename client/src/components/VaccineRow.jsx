@@ -31,9 +31,10 @@ export function VaccineRow({ vaccine }) {
             <Button
               variant="icon"
               tone="success"
+              disabled={administer.isPending}
               onClick={async () => {
                 try {
-                  await administer.mutateAsync({ id: vaccine._id })
+                  await administer.mutateAsync({ id: vaccine._id, catId: vaccine.catId })
                   addToast(`${vaccine.name} marked administered`, 'success')
                 } catch (err) {
                   addToast(err.message, 'error')
@@ -47,9 +48,10 @@ export function VaccineRow({ vaccine }) {
             <Button
               variant="icon"
               tone="warning"
+              disabled={snooze.isPending}
               onClick={async () => {
                 try {
-                  await snooze.mutateAsync({ id: vaccine._id, days: 30 })
+                  await snooze.mutateAsync({ id: vaccine._id, catId: vaccine.catId, days: 30 })
                   addToast(`${vaccine.name} snoozed 30 days`, 'success')
                 } catch (err) {
                   addToast(err.message, 'error')
@@ -83,7 +85,7 @@ export function VaccineRow({ vaccine }) {
         onConfirm={async () => {
           setConfirmDelete(false)
           try {
-            await remove.mutateAsync(vaccine._id)
+            await remove.mutateAsync({ id: vaccine._id, catId: vaccine.catId })
             addToast('Vaccine deleted', 'success')
           } catch (err) {
             addToast(err.message, 'error')

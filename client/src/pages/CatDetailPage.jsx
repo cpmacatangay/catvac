@@ -1,8 +1,21 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeftIcon, PencilSquareIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline'
-import { useForm } from 'react-hook-form'
+import { ArrowLeftIcon, PencilSquareIcon, TrashIcon, PlusIcon, CalendarDaysIcon } from '@heroicons/react/24/outline'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import {
+  DatePicker,
+  DateInput,
+  DateSegment,
+  Group,
+  Popover,
+  Button as AriaButton,
+  Calendar,
+  CalendarGrid,
+  CalendarCell,
+  Heading,
+} from 'react-aria-components'
+import { parseDate } from '@internationalized/date'
 import { useCat, useUpdateCat, useDeleteCat } from '../hooks/useCats.js'
 import { useVaccines, useCreateVaccine } from '../hooks/useVaccines.js'
 import { useToast } from '../context/ToastContext.jsx'
@@ -168,7 +181,55 @@ export function CatDetailPage() {
             <Input id="vax-name" {...vaxForm.register('name')} error={vaxForm.formState.errors.name} required />
           </Field>
           <Field label="Due Date" htmlFor="vax-due" error={vaxForm.formState.errors.dueDate?.message}>
-            <Input id="vax-due" type="date" {...vaxForm.register('dueDate')} error={vaxForm.formState.errors.dueDate} required />
+            <Controller
+              name="dueDate"
+              control={vaxForm.control}
+              render={({ field }) => (
+                <DatePicker
+                  value={field.value ? parseDate(field.value.split('T')[0]) : undefined}
+                  onChange={(value) => {
+                    if (value) {
+                      const iso = value.toDate('UTC').toISOString()
+                      field.onChange(iso)
+                    }
+                  }}
+                  isRequired
+                  granularity="day"
+                  className="w-full min-w-0"
+                >
+                  <Group className="flex items-center w-full text-body border border-gray-300 rounded-lg px-4 py-3 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary bg-white gap-1">
+                    <DateInput className="flex-1 flex gap-1 items-center min-w-0">
+                      {(segment) => (
+                        <DateSegment
+                          segment={segment}
+                          className="focus:outline-none focus:bg-primary-light focus:text-primary rounded px-1 py-0.5 text-center box-content"
+                        />
+                      )}
+                    </DateInput>
+                    <AriaButton>
+                      <CalendarDaysIcon className="h-5 w-5 text-gray-400" aria-hidden />
+                    </AriaButton>
+                  </Group>
+                  <Popover>
+                    <Calendar className="bg-white shadow-elevated rounded-lg p-4 min-w-[260px]">
+                      <header className="flex items-center justify-between mb-2">
+                        <AriaButton slot="previous" className="text-primary hover:text-primary-hover text-lg">◀</AriaButton>
+                        <Heading className="font-heading text-subtitle text-gray-800" />
+                        <AriaButton slot="next" className="text-primary hover:text-primary-hover text-lg">▶</AriaButton>
+                      </header>
+                      <CalendarGrid className="w-full">
+                        {(date) => (
+                          <CalendarCell
+                            date={date}
+                            className="text-center py-1.5 rounded hover:bg-primary-light hover:text-primary cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary aria-selected:bg-primary aria-selected:text-white text-body-sm"
+                          />
+                        )}
+                      </CalendarGrid>
+                    </Calendar>
+                  </Popover>
+                </DatePicker>
+              )}
+            />
           </Field>
           <Field label="Interval (months, optional)" htmlFor="vax-interval" error={vaxForm.formState.errors.intervalMonths?.message}>
             <Input id="vax-interval" type="number" {...vaxForm.register('intervalMonths')} error={vaxForm.formState.errors.intervalMonths} min={1} max={120} />

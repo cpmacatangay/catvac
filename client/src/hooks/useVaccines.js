@@ -25,7 +25,8 @@ export function useAdministerVaccine() {
   return useMutation({
     mutationFn: ({ id, ...data }) =>
       api(`/vaccines/${id}/administer`, { method: 'PATCH', body: JSON.stringify(data) }),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['vaccines', variables.catId] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
     },
   })
@@ -36,7 +37,8 @@ export function useSnoozeVaccine() {
   return useMutation({
     mutationFn: ({ id, days }) =>
       api(`/vaccines/${id}/snooze`, { method: 'PATCH', body: JSON.stringify({ days }) }),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['vaccines', variables.catId] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
     },
   })
@@ -45,8 +47,9 @@ export function useSnoozeVaccine() {
 export function useDeleteVaccine() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (id) => api(`/vaccines/${id}`, { method: 'DELETE' }),
-    onSuccess: () => {
+    mutationFn: ({ id }) => api(`/vaccines/${id}`, { method: 'DELETE' }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['vaccines', variables.catId] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
     },
   })

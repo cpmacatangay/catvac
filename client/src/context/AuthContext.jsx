@@ -8,10 +8,12 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    let cancelled = false
     api('/auth/me')
-      .then((data) => setUser(data.user))
-      .catch(() => setUser(null))
-      .finally(() => setIsLoading(false))
+      .then((data) => { if (!cancelled) setUser(data.user) })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setIsLoading(false) })
+    return () => { cancelled = true }
   }, [])
 
   const login = useCallback(async (email, password) => {
