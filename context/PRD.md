@@ -22,15 +22,17 @@ Cat owners frequently miss booster dates (rabies, FVRCP, FeLV core vaccines) bec
 4. Provide a **dashboard** showing each cat's upcoming due/snoozed/overdue vaccines at a glance.
 5. Allow marking a vaccine **administered**, which (if a recurrence is set) auto-schedules the next booster.
 
-### Non-Goals (explicitly deferred to Phase 2+)
-- SMS / in-app push notifications
+### Non-Goals (explicitly deferred to future phases)
 - Preset vaccination schedules (AAHA/AAFP-driven)
 - Vet clinic directory or appointment booking
 - Photo/PDF vet record uploads
 - Multi-user sharing (spouse/vet co-management)
 - Per-region schedule configuration / admin tooling
-- Native mobile apps
 - Gamification, social features, marketplace
+
+### Phase 2 — now in-scope (Android app)
+- Native Android app (Kotlin + Jetpack Compose)
+- Push notifications via Firebase Cloud Messaging (FCM), delivered alongside existing email reminders
 
 ---
 
@@ -226,3 +228,15 @@ ReminderLog { _id, vaccineId→Vaccine, type("pre"|"due"|"overdue"),
 | **Wk 4** | Reminder engine | `node-cron` job, nodemailer transport, 4 email templates (pre/due/overdue/administered), dedup via ReminderLog, unsubscribe endpoint, owner notification prefs UI |
 | **Wk 5** | Dashboard & polish | Dashboard aggregation endpoint, React dashboard page with status pills grouping, loading/empty/error states, toast notifications, Sentry setup, error handling pass |
 | **Wk 6** | Hardening & deploy | Rate limits, CSP/Helmet review, GDPR delete endpoint, seed script, env config, deploy API to Railway/Render (or EC2) + frontend to Vercel, smoke test in prod |
+
+---
+
+## 11. Mobile Milestones (Android — Phase 2)
+
+| Phase | Focus | Deliverables |
+|---|---|---|
+| **P0** | Server auth for mobile | Bearer token support in `auth.middleware.js`, `login`/`signup` return `{ user, token }`, `JWT_EXPIRES_IN` → 30d |
+| **P1** | Server push | `devicetokens` collection, `DevicesApi` (POST/DELETE), `PushService` (firebase-admin), `reminderlog.channel` field + migration, cron extension for push channel |
+| **P2** | Android scaffold | Hilt app, Compose theme (Material 3 from DESIGN.md), Nav, Login/Signup screens, EncryptedTokenStore, Retrofit + OkHttp auth interceptor |
+| **P3** | Feature parity | Dashboard screen (cat cards + status pills), Cat detail screen (vaccine rows + CRUD), bottom sheet forms for add/edit, FCM + permission flow |
+| **P4** | Polish | Error handling, loading/empty states, push registration on first launch, `ComputeStatusUseCase` unit test, smoke test on device |

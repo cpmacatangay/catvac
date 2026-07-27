@@ -494,7 +494,8 @@ graph TB
 | Component | Host | Notes |
 |---|---|---|
 | **React SPA** | Vercel | Static deployment, client-side routing via `rewrites`, env: `VITE_API_URL` (set to your production API origin, same-origin via `rewrites` recommended over CORS) |
-| **Express API** | Railway / Render | Single Node process. `SMTP_*` env, `MONGODB_URI`, `JWT_SECRET`, `SENTRY_DSN` |
+| **Express API** | Railway / Render | Single Node process. `SMTP_*` env, `MONGODB_URI`, `JWT_SECRET`, `SENTRY_DSN`. Also serves as push origin via FCM. |
+| **Android App** | Personal sideload | Kotlin + Jetpack Compose. Bearer JWT auth via `Authorization` header (not cookies). Push via `firebase-admin` on server + FCM SDK on device. |
 | **MongoDB** | Atlas M0 | IP whitelist (Railway egress), `MONGODB_URI` in API env |
 | **SMTP** | Brevo / SendGrid | API key in env. Dev: Mailhog locally |
 | **Email DNS** | SPF + DKIM | Required for inbox delivery. Configured in SMTP provider dashboard |
@@ -513,6 +514,7 @@ SMTP_PASS=<sendgrid-api-key>
 FROM_EMAIL=reminders@catvac.app
 SENTRY_DSN=https://...
 FRONTEND_ORIGIN=https://catvac.app
+FIREBASE_SERVICE_ACCOUNT=./firebase-service-account.json
 ```
 
 ---

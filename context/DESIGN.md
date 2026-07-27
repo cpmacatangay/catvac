@@ -406,10 +406,65 @@ Reminder emails should feel like they came from the same brand, even though they
 
 ---
 
-## 14. Future Considerations (Phase 2+)
+## 14. Future Considerations
 
 - Dark mode palette (inverted purple -> deep indigo background, light text)
 - i18n — ensure dynamic text is extractable (no hardcoded strings in components)
 - Cat avatar upload (replaces placeholder icon with real image)
 - Custom illustration set (cats in various poses, vaccine-themed)
 - Motion design system (Lottie for empty states)
+- iOS native app (Swift/SwiftUI, shares design tokens)
+
+---
+
+## 15. Mobile (Android) — Material 3 Port
+
+The Android app (`android/`) applies the CatVac design system via Material 3 Compose.
+
+### Color Palette Mapping
+
+| Web Token | Material 3 Role | Kotlin Constant |
+|---|---|---|
+| `#8B5CF6` Primary | `primary` | `Color(0xFF8B5CF6)` |
+| `#7C3AED` Primary hover | `onPrimaryContainer` | `Color(0xFF7C3AED)` |
+| `#DDD6FE` Primary light | `primaryContainer` | `Color(0xFFDDD6FE)` |
+| `#F472B6` Accent | `secondary` | `Color(0xFFF472B6)` |
+| `#FAF5FF` Page bg | `background` | `Color(0xFFFAF5FF)` |
+| `#FFFFFF` Surface | `surface` | `Color(0xFFFFFFFF)` |
+| `#FDF4FF` Surface secondary | `surfaceVariant` | `Color(0xFFFDF4FF)` |
+| `#1F2937` Text primary | `onSurface` / `onBackground` | `Color(0xFF1F2937)` |
+| `#6B7280` Text secondary | `onSurfaceVariant` | `Color(0xFF6B7280)` |
+| `#E5E7EB` Divider | `outline` / `outlineVariant` | `Color(0xFFE5E7EB)` |
+| `#3B82F6` Upcoming | Custom status color | `Upcoming` in `Color.kt` |
+| `#D97706` Due | Custom status color | `Due` in `Color.kt` |
+| `#DC2626` Overdue | Custom status color | `Overdue` in `Color.kt` |
+| `#16A34A` Administered | Custom status color | `Administered` in `Color.kt` |
+
+### Type Scale Mapping
+
+| Level | Tailwind (px) | Compose (sp) | Text Style | Font |
+|---|---|---|---|---|
+| Hero | 44 | 44sp | `displayLarge` | Fredoka SemiBold |
+| h1 | 34 | 34sp | `headlineLarge` | Fredoka SemiBold |
+| h2 | 26 | 26sp | `headlineMedium` | Fredoka SemiBold |
+| h3 | 22 | 22sp | `headlineSmall` | Fredoka SemiBold |
+| Subtitle | 18 | 18sp | `titleLarge` | Nunito SemiBold |
+| Body | 17 | 17sp | `bodyLarge` | Nunito Regular |
+| Body small | 15 | 15sp | `bodyMedium` | Nunito Regular |
+| Caption | 14 | 14sp | `labelLarge` | Nunito SemiBold |
+| Badge | 13 | 13sp | `labelSmall` | Nunito Bold |
+
+Fonts Fredoka and Nunito are bundled as `.ttf` files in `res/font/` (see [`context/MOBILE.md`](./MOBILE.md) for setup).
+
+### Component Equivalents
+
+| Web Component | Compose Equivalent | Notes |
+|---|---|---|
+| `Button` | `Button()` / `FilledTonalButton()` | 48dp min height, `RoundedCornerShape(12.dp)` |
+| `OutlinedButton` | `OutlinedButton()` | Same shape as Button |
+| `StatusPill` | Custom `StatusPill()` composable | Inline: `Box(8dp circle) + Text; gap 6dp` |
+| `CatCard` | `Card()` + `CatCard()` composable | `RoundedCornerShape(12.dp)`, 2dp elevation |
+| `VaccineRow` | `Card()` + `VaccineRow()` composable | Row: name + date + StatusPill |
+| Input field | `OutlinedTextField()` | Rounded corners via `shape` parameter |
+| Toast | `Snackbar()` (Material 3) | Via `SnackbarHostState` |
+| Modal/Dialog | `ModalBottomSheet()` / `AlertDialog()` | Bottom sheets for add/edit; AlertDialog for delete confirm |

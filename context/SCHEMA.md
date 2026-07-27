@@ -238,11 +238,12 @@ vaccineSchema.set('toObject', { virtuals: true })
 | `vaccineId` | ObjectId | yes | — | ref: `Vaccine`, indexed | Which vaccine this reminder is for |
 | `type` | String | yes | — | enum: `'pre'`, `'due'`, `'overdue'` | Reminder window type |
 | `windowDate` | Date | yes | — | — | Start of the reminder window (used for dedup) |
+| `channel` | String | no | `'email'` | enum: `'email'`, `'push'` | Delivery channel (added via migration `202607250001_add-push-channel.js`) |
 | `sentAt` | Date | no | `new Date()` | — | When the email was sent |
 | `status` | String | no | `'sent'` | enum: `'sent'`, `'failed'` | Delivery status |
 | `error` | String | no | `null` | max 500 | Error message (only populated on failure) |
 
-**Unique compound index:** `{ vaccineId: 1, type: 1, windowDate: 1 }` — enforces idempotency.
+**Unique compound index:** `{ vaccineId: 1, type: 1, windowDate: 1, channel: 1 }` — enforces idempotency per channel (allows both an email and a push reminder for the same window).
 
 **TTL index:** `{ sentAt: 1 }, { expireAfterSeconds: 90 * 24 * 3600 }` — auto-deletes records older than 90 days.
 
@@ -258,9 +259,41 @@ const reminderLogSchema = new mongoose.Schema({
   error: { type: String, default: null, maxlength: 500 },
 })
 
-reminderLogSchema.index({ vaccineId: 1, type: 1, windowDate: 1 }, { unique: true })
+reminderLogSchema.index({ vaccineId: 1, type: 1, windowDate: 1, channel: 1 }, { unique: true })
 reminderLogSchema.index({ sentAt: 1 }, { expireAfterSeconds: 90 * 24 * 3600 })
 ```
+
+### 3.5 `devicetokens`
+
+| Field | Type | Required | Default | Constraints | Description |
+|---|---|---|---|---|---|
+| `_id` | ObjectId | auto | auto | — | Primary key |
+| `ownerId` | ObjectId | yes | — | ref: `User`, indexed | User who owns this device |
+| `token` | String | yes | — | — | FCM registration token |
+| `platform` | String | yes | — | enum: `'android'` (future: `'ios'`) | Device platform |
+| `appVersion` | String | no | `null` | max 20 | App version when token was registered |
+| `lastSeenAt` | Date | no | `Date.now` | — | Last time this device called the API |
+
+**Mongoose schema:**
+```javascript
+const deviceTokenSchema = new mongoose.Schema({
+  ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  token: { type: String, required: true },
+  platform: { type: String, required: true, enum: ['android'] },
+  appVersion: { type: String, default: null, maxlength: 20 },
+  lastSeenAt: { type: Date, default: Date.now },
+}, { timestamps: { createdAt: true, updatedAt: false } })
+
+deviceTokenSchema.index({ ownerId: 1, token: 1 }, { unique: true })
+```
+
+**API endpoints:**
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/api/v1/devices` | Register (or upsert) a device token |
+| `DELETE` | `/api/v1/devices/:token` | Unregister a device |
+
+Both endpoints are authed via `authMiddleware` (supports both cookie and Bearer token).
 
 ---
 
@@ -272,6 +305,7 @@ reminderLogSchema.index({ sentAt: 1 }, { expireAfterSeconds: 90 * 24 * 3600 })
 | `Vaccine.ownerId` | `User._id` | Mongoose `ref: 'User'` | Denormalized for query performance | Same as above |
 | `Vaccine.catId` | `Cat._id` | Mongoose `ref: 'Cat'` | Every vaccine belongs to exactly one cat | Cat soft-delete → visible in queries but `deletedAt` set; vaccine remains (orphan check in UI) |
 | `ReminderLog.vaccineId` | `Vaccine._id` | Mongoose `ref: 'Vaccine'` | Every log entry references one vaccine | Vaccine hard-delete → reminderlog records orphaned (TTL cleanup eventually) |
+| `DeviceToken.ownerId` | `User._id` | Direct field (no Mongoose `ref`) | Every device token belongs to one user | User delete → hard-delete all device tokens |
 
 ### Populate Patterns
 
@@ -320,8 +354,15 @@ const cat = await Cat.findOne({ _id, ownerId }).populate({
 
 | Index | Fields | Unique | Purpose |
 |---|---|---|---|
-| `uq_reminder_dedup` | `{ vaccineId: 1, type: 1, windowDate: 1 }` | Yes | Idempotency: prevent duplicate reminder sends |
+| `uq_reminder_dedup` | `{ vaccineId: 1, type: 1, windowDate: 1, channel: 1 }` | Yes | Idempotency: prevents duplicate sends per-channel (email + push allowed for same window) |
 | `ttl_reminder_cleanup` | `{ sentAt: 1 }` | TTL (90 days) | Auto-cleanup old logs |
+
+### 5.5 `devicetokens`
+
+| Index | Fields | Unique | Purpose |
+|---|---|---|---|
+| `idx_device_owner` | `{ ownerId: 1 }` | No | Find all devices for a user (push sends) |
+| `uq_device_owner_token` | `{ ownerId: 1, token: 1 }` | Yes | Prevent duplicate device registrations |
 
 ---
 
