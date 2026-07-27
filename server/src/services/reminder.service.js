@@ -24,18 +24,22 @@ export class ReminderService {
     summary.checked = vaccines.length
 
     for (const vaccine of vaccines) {
-      const user = await User.findById(vaccine.ownerId)
-      if (!user) continue
+      try {
+        const user = await User.findById(vaccine.ownerId)
+        if (!user) continue
 
-      const windows = this.getReminderWindows(vaccine, today, user.prefs?.leadDays ?? 7)
+        const windows = this.getReminderWindows(vaccine, today, user.prefs?.leadDays ?? 7)
 
-      for (const { type, windowDate, windowEnd } of windows) {
-        if (today < windowDate || today > windowEnd) continue
+        for (const { type, windowDate, windowEnd } of windows) {
+          if (today < windowDate || today > windowEnd) continue
 
-        await this.sendEmailReminder(vaccine, user, type, windowDate, summary)
-        if (this.pushService) {
-          await this.sendPushReminder(vaccine, user, type, windowDate, summary)
+          await this.sendEmailReminder(vaccine, user, type, windowDate, summary)
+          if (this.pushService) {
+            await this.sendPushReminder(vaccine, user, type, windowDate, summary)
+          }
         }
+      } catch (err) {
+        this.logger.error(`Reminder skipped for vaccine ${vaccine._id}: ${err.message}`)
       }
     }
 

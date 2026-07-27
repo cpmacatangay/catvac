@@ -20,13 +20,22 @@ export async function update(vaccineId, ownerId, data) {
 }
 
 export async function administer(vaccineId, ownerId, administeredDate, note) {
-  const vaccine = await Vaccine.findOne({ _id: vaccineId, ownerId })
-  if (!vaccine) throw new NotFoundError('Vaccine not found')
-  if (vaccine.administered) throw new ValidationError('Vaccine already administered')
+  const update = {
+    administered: true,
+    administeredDate: administeredDate || new Date(),
+  }
+  if (note) update.administeredNote = note
 
-  vaccine.administered = true
-  vaccine.administeredDate = administeredDate || new Date()
-  if (note) vaccine.administeredNote = note
+  const vaccine = await Vaccine.findOneAndUpdate(
+    { _id: vaccineId, ownerId, administered: false },
+    { $set: update },
+    { new: true },
+  )
+  if (!vaccine) {
+    const existing = await Vaccine.findOne({ _id: vaccineId, ownerId })
+    if (!existing) throw new NotFoundError('Vaccine not found')
+    throw new ValidationError('Vaccine already administered')
+  }
 
   let nextBooster = null
   if (vaccine.intervalMonths) {
@@ -40,7 +49,6 @@ export async function administer(vaccineId, ownerId, administeredDate, note) {
     })
   }
 
-  await vaccine.save()
   return { vaccine, nextBooster }
 }
 

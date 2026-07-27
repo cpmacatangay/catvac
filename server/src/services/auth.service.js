@@ -12,7 +12,13 @@ export async function signup(email, password) {
   }
 
   const passwordHash = await bcrypt.hash(password, BCRYPT_COST)
-  const user = await User.create({ email: email.toLowerCase(), passwordHash })
+  let user
+  try {
+    user = await User.create({ email: email.toLowerCase(), passwordHash })
+  } catch (err) {
+    if (err.code === 11000) throw new ConflictError('Email already registered')
+    throw err
+  }
   const token = generateToken(user)
 
   return { token, user: { id: user._id, email: user.email, prefs: user.prefs } }

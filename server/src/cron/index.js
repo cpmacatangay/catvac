@@ -22,32 +22,32 @@ const cronLogger = {
 export function startReminderEngine() {
   const mailer = createMailer()
 
-  let pushService = null
-  const fcmClientPromise = createFcmClient()
-  if (fcmClientPromise) {
-    fcmClientPromise
-      .then((messaging) => {
-        if (messaging) {
-          pushService = new PushService(messaging, cronLogger)
-          cronLogger.info('FCM initialized for push notifications')
+  Promise.resolve(createFcmClient())
+    .then((messaging) => {
+      let pushService = null
+      if (messaging) {
+        pushService = new PushService(messaging, cronLogger)
+        cronLogger.info('FCM initialized for push notifications')
+      }
+      return pushService
+    })
+    .catch((err) => {
+      cronLogger.error(`FCM initialization failed: ${err.message}. Push disabled.`)
+      return null
+    })
+    .then((pushService) => {
+      const reminderService = new ReminderService(mailer, cronLogger, pushService)
+
+      cron.schedule('0 2 * * *', async () => {
+        cronLogger.info('Starting nightly reminder scan')
+        try {
+          const summary = await reminderService.processReminders()
+          cronLogger.info(`Reminder scan complete — checked: ${summary.checked}, email sent: ${summary.emailSent}, push sent: ${summary.pushSent}`)
+        } catch (err) {
+          cronLogger.error(`Reminder scan failed: ${err.message}`)
         }
       })
-      .catch((err) => {
-        cronLogger.error(`FCM initialization failed: ${err.message}. Push disabled.`)
-      })
-  }
 
-  const reminderService = new ReminderService(mailer, cronLogger, pushService)
-
-  cron.schedule('0 2 * * *', async () => {
-    cronLogger.info('Starting nightly reminder scan')
-    try {
-      const summary = await reminderService.processReminders()
-      cronLogger.info(`Reminder scan complete — checked: ${summary.checked}, sent: ${summary.sent}, skipped: ${summary.skipped}, failed: ${summary.failed}`)
-    } catch (err) {
-      cronLogger.error(`Reminder scan failed: ${err.message}`)
-    }
-  })
-
-  console.log('[reminder-engine] Scheduled for 02:00 daily')
+      console.log('[reminder-engine] Scheduled for 02:00 daily')
+    })
 }
