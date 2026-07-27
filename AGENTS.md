@@ -23,8 +23,14 @@ catvac/
 │       ├── schemas/      # Zod validation
 │       ├── cron/         # node-cron reminder engine
 │       └── emails/       # HTML email templates (plain strings, no template engine)
+├── android/              # Kotlin + Jetpack Compose (Material 3)
+│   └── app/src/main/java/com/catvac/app/
+│       ├── data/         # DTOs, APIs (Retrofit), repositories
+│       ├── domain/       # ComputeStatusUseCase
+│       ├── ui/           # Screens + components (Compose)
+│       └── push/         # CatVacFcmService
 ├── docker-compose.yml    # api:3000, web:5173, mongo:27017, mailhog:8025
-└── context/              # PRD, DESIGN, ARCHITECTURE, SCHEMA, RULES
+└── context/              # PRD, DESIGN, ARCHITECTURE, SCHEMA, RULES, MOBILE
 ```
 
 ## Architecture Rules
@@ -75,6 +81,12 @@ cd server && npm run migrate:down
 cd server && npm test                # Vitest + Supertest (unit + integration)
 cd client && npm test                # Vitest + React Testing Library
 
+# Android (personal-use, no Play Store)
+export ANDROID_HOME=/path/to/sdk
+cd android && ./gradlew assembleDebug     # Build debug APK (app/build/outputs/apk/debug/)
+cd android && ./gradlew assembleRelease   # Build release APK (signed via key.properties)
+adb install -r android/app/build/outputs/apk/debug/app-debug.apk  # Install on device
+
 # Full validation gate (run before every commit/PR)
 npm run lint && npm run typecheck && npm test
 ```
@@ -91,7 +103,7 @@ npm run lint && npm run typecheck && npm test
 ```
 MONGODB_URI=mongodb://mongo:27017/catvac
 JWT_SECRET=<random-64-chars>
-JWT_EXPIRES_IN=7d
+JWT_EXPIRES_IN=30d
 SMTP_HOST=mailhog              # localhost for dev outside Docker
 SMTP_PORT=1025
 SMTP_USER=
@@ -99,6 +111,7 @@ SMTP_PASS=
 FROM_EMAIL=reminders@catvac.app
 FRONTEND_ORIGIN=http://localhost:5173
 SENTRY_DSN=                    # optional in dev
+FIREBASE_SERVICE_ACCOUNT=./firebase-service-account.json  # optional, enables FCM push
 UNSUBSCRIBE_SECRET=<random>
 ```
 
@@ -109,5 +122,6 @@ UNSUBSCRIBE_SECRET=<random>
 3. `context/ARCHITECTURE.md` — layered architecture, middleware order, data flow, deployment
 4. `context/DESIGN.md` — Tailwind palette, typography, spacing, component styling
 5. `context/PRD.md` — user stories, functional requirements, milestones
+6. `context/MOBILE.md` — Android architecture (Kotlin + Compose), auth, push, distribution
 
 If docs conflict, trust the executable source (package.json scripts, config files) over prose.

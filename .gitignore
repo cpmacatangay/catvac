@@ -3,4 +3,17 @@ dist/
 .env
 *.archive
 .DS_Store
-session-ses_094b.md
+session-ses_*.md
+
+server/firebase-service-account.json
+
+# Android
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/*.keystore
+android/key.properties
+android/app/google-services.json
+android/app/release/
+
