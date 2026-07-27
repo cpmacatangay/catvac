@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="128dp"
+    android:height="128dp"
+    android:viewportWidth="32"
+    android:viewportHeight="32">
+
+    <!-- Left ear -->
+    <path
+        android:fillColor="#8B5CF6"
+        android:pathData="M8,18 C4,14 2,9 4,5 C6,3 10,6 12,9 L10,12 L6,14 L6,18 Z" />
+
+    <!-- Right ear -->
+    <path
+        android:fillColor="#8B5CF6"
+        android:pathData="M24,18 C28,14 30,9 28,5 C26,3 22,6 20,9 L22,12 L26,14 L26,18 Z" />
+
+    <!-- Face -->
+    <path
+        android:fillColor="#8B5CF6"
+        android:pathData="M6,20 A10,8 0 1,1 26,20 A10,8 0 1,1 6,20 Z" />
+
+    <!-- Left eye -->
+    <path
+        android:fillColor="#FAF5FF"
+        android:pathData="M11.8,17 A1.2,1.5 0 1,1 14.2,17 A1.2,1.5 0 1,1 11.8,17 Z" />
+
+    <!-- Right eye -->
+    <path
+        android:fillColor="#FAF5FF"
+        android:pathData="M17.8,17 A1.2,1.5 0 1,1 20.2,17 A1.2,1.5 0 1,1 17.8,17 Z" />
+
+    <!-- Nose -->
+    <path
+        android:fillColor="#7C3AED"
+        android:pathData="M14,22 A2,1.2 0 1,1 18,22 A2,1.2 0 1,1 14,22 Z" />
+
+    <!-- Cross (vaccine mark) -->
+    <path
+        android:fillColor="#F472B6"
+        android:pathData="M24,6 h1 v4 h-1 z M23,7 h3 v2 h-3 z" />
+</vector>
