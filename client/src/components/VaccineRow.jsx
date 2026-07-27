@@ -1,12 +1,17 @@
+import { useState } from 'react'
 import { CheckCircleIcon, ArrowPathIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { StatusPill } from './StatusPill.jsx'
 import { Button } from './Button.jsx'
+import { ConfirmDialog } from './ConfirmDialog.jsx'
+import { useToast } from '../context/ToastContext.jsx'
 import { useAdministerVaccine, useSnoozeVaccine, useDeleteVaccine } from '../hooks/useVaccines.js'
 
 export function VaccineRow({ vaccine }) {
   const administer = useAdministerVaccine()
   const snooze = useSnoozeVaccine()
   const remove = useDeleteVaccine()
+  const { addToast } = useToast()
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   return (
     <div className="bg-white rounded-lg p-5 shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
@@ -26,7 +31,14 @@ export function VaccineRow({ vaccine }) {
             <Button
               variant="icon"
               tone="success"
-              onClick={() => administer.mutate({ id: vaccine._id })}
+              onClick={async () => {
+                try {
+                  await administer.mutateAsync({ id: vaccine._id })
+                  addToast(`${vaccine.name} marked administered`, 'success')
+                } catch (err) {
+                  addToast(err.message, 'error')
+                }
+              }}
               title="Mark administered"
               aria-label="Mark administered"
             >
@@ -35,7 +47,14 @@ export function VaccineRow({ vaccine }) {
             <Button
               variant="icon"
               tone="warning"
-              onClick={() => snooze.mutate({ id: vaccine._id, days: 30 })}
+              onClick={async () => {
+                try {
+                  await snooze.mutateAsync({ id: vaccine._id, days: 30 })
+                  addToast(`${vaccine.name} snoozed 30 days`, 'success')
+                } catch (err) {
+                  addToast(err.message, 'error')
+                }
+              }}
               title="Snooze 30 days"
               aria-label="Snooze 30 days"
             >
@@ -47,13 +66,31 @@ export function VaccineRow({ vaccine }) {
         <Button
           variant="icon"
           tone="danger"
-          onClick={() => remove.mutate(vaccine._id)}
+          onClick={() => setConfirmDelete(true)}
           title="Delete"
           aria-label="Delete vaccine"
         >
           <XMarkIcon className="h-6 w-6" aria-hidden />
         </Button>
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title={`Delete ${vaccine.name}?`}
+        message="This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={async () => {
+          setConfirmDelete(false)
+          try {
+            await remove.mutateAsync(vaccine._id)
+            addToast('Vaccine deleted', 'success')
+          } catch (err) {
+            addToast(err.message, 'error')
+          }
+        }}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </div>
   )
 }

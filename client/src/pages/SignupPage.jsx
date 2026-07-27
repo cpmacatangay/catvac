@@ -3,7 +3,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 import { Button } from '../components/Button.jsx'
+import { Field } from '../components/Field.jsx'
+import { Input } from '../components/Input.jsx'
+import { PasswordInput } from '../components/PasswordInput.jsx'
 import { signupSchema } from '../lib/validators.js'
+import { LogoWordmark } from '../components/Logo.jsx'
 
 export function SignupPage() {
   const { signup } = useAuth()
@@ -30,7 +34,10 @@ export function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        <h1 className="font-heading text-hero text-center text-primary mb-8">CatVac</h1>
+        <div className="text-center mb-2">
+          <LogoWordmark size="text-hero" />
+          <p className="text-body-sm text-gray-400 mt-1">Never miss a jab.</p>
+        </div>
 
         <form
           onSubmit={handleSubmit(onSubmit)}
@@ -45,76 +52,24 @@ export function SignupPage() {
             </div>
           )}
 
-          <div>
-            <label htmlFor="email" className="block font-semibold text-caption text-gray-700 mb-1 uppercase tracking-wider">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              {...register('email')}
-              className={`w-full text-body rounded-lg px-4 py-3 focus:outline-2 focus:outline-primary focus:outline-offset-2 ${
-                errors.email
-                  ? 'border-red-500 ring-1 ring-red-500'
-                  : 'border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary'
-              }`}
-            />
-            {errors.email && (
-              <p className="text-red-600 text-body-sm mt-1">{errors.email.message}</p>
-            )}
-          </div>
+          <Field label="Email" htmlFor="signup-email" error={errors.email?.message}>
+            <Input id="signup-email" type="email" autoComplete="email" {...register('email')} error={errors.email} />
+          </Field>
 
-          <div>
-            <label htmlFor="password" className="block font-semibold text-caption text-gray-700 mb-1 uppercase tracking-wider">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              {...register('password')}
-              className={`w-full text-body rounded-lg px-4 py-3 focus:outline-2 focus:outline-primary focus:outline-offset-2 ${
-                errors.password
-                  ? 'border-red-500 ring-1 ring-red-500'
-                  : 'border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary'
-              }`}
-            />
-            {errors.password && (
-              <p className="text-red-600 text-body-sm mt-1">{errors.password.message}</p>
-            )}
-            <p className="text-caption text-gray-400 mt-1">
-              At least 8 characters, one uppercase, one lowercase, and one number
-            </p>
-          </div>
+          <Field label="Password" htmlFor="signup-password" error={errors.password?.message}>
+            <PasswordInput id="signup-password" autoComplete="new-password" {...register('password')} error={errors.password} />
+          </Field>
 
-          <div>
-            <label htmlFor="confirmPassword" className="block font-semibold text-caption text-gray-700 mb-1 uppercase tracking-wider">
-              Confirm Password
-            </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              {...register('confirmPassword')}
-              className={`w-full text-body rounded-lg px-4 py-3 focus:outline-2 focus:outline-primary focus:outline-offset-2 ${
-                errors.confirmPassword
-                  ? 'border-red-500 ring-1 ring-red-500'
-                  : 'border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary'
-              }`}
-            />
-            {errors.confirmPassword && (
-              <p className="text-red-600 text-body-sm mt-1">{errors.confirmPassword.message}</p>
-            )}
-          </div>
+          <Field label="Confirm Password" htmlFor="signup-confirm" error={errors.confirmPassword?.message}>
+            <PasswordInput id="signup-confirm" autoComplete="new-password" {...register('confirmPassword')} error={errors.confirmPassword} />
+          </Field>
 
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={isSubmitting}
-            className="w-full"
-          >
-            {isSubmitting ? 'Creating account…' : 'Sign Up'}
+          <p className="text-caption text-gray-400 -mt-2">
+            At least 8 characters, one uppercase, one lowercase, and one number
+          </p>
+
+          <Button type="submit" variant="primary" loading={isSubmitting} className="w-full">
+            Sign Up
           </Button>
 
           <p className="text-body-sm text-gray-500 text-center">

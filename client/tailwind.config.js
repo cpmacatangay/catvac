@@ -3,6 +3,20 @@ export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
+      keyframes: {
+        'slide-in': {
+          '0%': { transform: 'translateX(100%)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+      },
+      animation: {
+        'slide-in': 'slide-in 300ms ease-out',
+        'fade-in': 'fade-in 200ms ease-out',
+      },
       colors: {
         primary: { DEFAULT: '#8B5CF6', hover: '#7C3AED', light: '#DDD6FE' },
         accent: { DEFAULT: '#F472B6', hover: '#EC4899' },

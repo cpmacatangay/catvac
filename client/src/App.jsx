@@ -3,13 +3,14 @@ import { LoginPage } from './pages/LoginPage.jsx'
 import { SignupPage } from './pages/SignupPage.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
 import { CatDetailPage } from './pages/CatDetailPage.jsx'
+import { AppLayout } from './components/AppLayout.jsx'
 import { useAuth } from './hooks/useAuth.js'
 
 function ProtectedRoute({ children }) {
   const { user, isLoading } = useAuth()
   if (isLoading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>
   if (!user) return <Navigate to="/login" replace />
-  return children
+  return <AppLayout>{children}</AppLayout>
 }
 
 function PublicRoute({ children }) {

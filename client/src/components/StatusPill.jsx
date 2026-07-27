@@ -1,33 +1,31 @@
-const STATUS_STYLES = {
-  'on-track': 'bg-green-100 text-green-700 border border-green-200',
-  upcoming: 'bg-blue-100 text-blue-700 border border-blue-200',
-  due: 'bg-amber-100 text-amber-700 border border-amber-200',
-  overdue: 'bg-red-100 text-red-700 border border-red-200',
-  administered: 'bg-gray-100 text-gray-500 border border-gray-200',
-  snoozed: 'bg-purple-100 text-purple-700 border border-purple-200',
-}
+import {
+  CheckCircleIcon,
+  ClockIcon,
+  ExclamationTriangleIcon,
+  ExclamationCircleIcon,
+  ArrowPathIcon,
+} from '@heroicons/react/24/outline'
 
-const STATUS_DOTS = {
-  'on-track': 'bg-green-500',
-  upcoming: 'bg-blue-500',
-  due: 'bg-amber-500',
-  overdue: 'bg-red-500',
-  administered: 'bg-gray-400',
-  snoozed: 'bg-purple-500',
+const STATUS_CONFIG = {
+  'on-track': { bg: 'bg-green-100 text-green-700 border border-green-200', dot: 'bg-green-500', Icon: CheckCircleIcon, label: 'OK' },
+  upcoming: { bg: 'bg-blue-100 text-blue-700 border border-blue-200', dot: 'bg-blue-500', Icon: ClockIcon, label: 'Upcoming' },
+  due: { bg: 'bg-amber-100 text-amber-700 border border-amber-200', dot: 'bg-amber-500', Icon: ExclamationTriangleIcon, label: 'Due' },
+  overdue: { bg: 'bg-red-100 text-red-700 border border-red-200', dot: 'bg-red-500', Icon: ExclamationCircleIcon, label: 'Overdue' },
+  administered: { bg: 'bg-green-100 text-green-700 border border-green-200', dot: 'bg-green-500', Icon: CheckCircleIcon, label: 'Done' },
+  snoozed: { bg: 'bg-purple-100 text-purple-700 border border-purple-200', dot: 'bg-purple-500', Icon: ArrowPathIcon, label: 'Snoozed' },
 }
 
 export function StatusPill({ status, dueDate }) {
-  const style = STATUS_STYLES[status] || STATUS_STYLES['on-track']
-  const dot = STATUS_DOTS[status] || STATUS_DOTS['on-track']
-  const label = status === 'administered' ? 'Done' : status === 'on-track' ? 'OK' : status
+  const config = STATUS_CONFIG[status] || STATUS_CONFIG['on-track']
+  const { Icon } = config
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-badge font-bold uppercase tracking-wider ${style}`}
-      aria-label={`Status: ${status}${dueDate ? `, due ${new Date(dueDate).toLocaleDateString()}` : ''}`}
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-badge font-bold uppercase tracking-wider ${config.bg}`}
+      aria-label={`Status: ${config.label}${dueDate ? `, due ${new Date(dueDate).toLocaleDateString()}` : ''}`}
     >
-      <span className={`h-2 w-2 rounded-full ${dot}`} aria-hidden />
-      {label}
+      <Icon className="h-3.5 w-3.5" aria-hidden />
+      {config.label}
     </span>
   )
 }

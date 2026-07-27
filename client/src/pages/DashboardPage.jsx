@@ -1,57 +1,75 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PlusIcon } from '@heroicons/react/24/outline'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useDashboard } from '../hooks/useDashboard.js'
 import { useCreateCat } from '../hooks/useCats.js'
-import { useAuth } from '../hooks/useAuth.js'
+import { useToast } from '../context/ToastContext.jsx'
+import { catSchema } from '../lib/validators.js'
 import { Button } from '../components/Button.jsx'
 import { CatCard } from '../components/CatCard.jsx'
-
-const EMPTY_FORM = { name: '', breed: '', sex: '', notes: '' }
+import { CatCardSkeleton } from '../components/Skeletons.jsx'
+import { Modal } from '../components/Modal.jsx'
+import { Field } from '../components/Field.jsx'
+import { Input } from '../components/Input.jsx'
+import { Select } from '../components/Select.jsx'
+import { Textarea } from '../components/Textarea.jsx'
 
 export function DashboardPage() {
   const { data: cats, isLoading, error } = useDashboard()
-  const { logout } = useAuth()
   const navigate = useNavigate()
   const createCat = useCreateCat()
-
+  const { addToast } = useToast()
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState(EMPTY_FORM)
-  const [formError, setFormError] = useState('')
 
-  async function handleAddCat(e) {
-    e.preventDefault()
-    setFormError('')
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(catSchema),
+  })
+
+  async function onSubmit(data) {
     try {
       await createCat.mutateAsync({
-        name: form.name,
-        breed: form.breed || null,
-        sex: form.sex || null,
-        notes: form.notes || null,
+        name: data.name,
+        breed: data.breed || null,
+        sex: data.sex || null,
+        notes: data.notes || null,
       })
-      setForm(EMPTY_FORM)
+      addToast('Cat added', 'success')
       setShowForm(false)
+      reset()
     } catch (err) {
-      setFormError(err.message)
+      addToast(err.message, 'error')
     }
-  }
-
-  function set(field) {
-    return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
   }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <p className="text-gray-500 text-body">Loading dashboard...</p>
+      <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <div className="space-y-2">
+            <div className="h-8 bg-gray-200 rounded w-28 motion-safe:animate-pulse" />
+            <div className="h-5 bg-gray-200 rounded w-40 motion-safe:animate-pulse" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <CatCardSkeleton />
+          <CatCardSkeleton />
+          <CatCardSkeleton />
+        </div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-          <div className="bg-red-100 text-red-700 p-5 rounded-lg w-full max-w-md">{error.message}</div>
+      <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-8 py-8">
+        <div className="bg-red-100 text-red-700 p-5 rounded-lg">{error.message}</div>
       </div>
     )
   }
@@ -61,81 +79,15 @@ export function DashboardPage() {
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-heading text-h1 text-gray-800">My Cats</h1>
-          <p className="text-subtitle text-gray-500">Vaccine dashboard</p>
+          <p className="text-subtitle text-gray-500">Never miss a jab.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button
-            variant="primary"
-            onClick={() => { setShowForm(true); setForm(EMPTY_FORM) }}
-          >
-            <PlusIcon className="h-5 w-5" aria-hidden /> Add Cat
-          </Button>
-          <Button variant="ghost" onClick={logout}>
-            Log out
-          </Button>
-        </div>
-      </header>
-
-      {showForm && (
-        <form
-          onSubmit={handleAddCat}
-          className="bg-white rounded-lg p-4 md:p-6 shadow-card space-y-4"
+        <Button
+          variant="primary"
+          onClick={() => { setShowForm(true); reset() }}
         >
-          <h3 className="font-heading text-h2 text-gray-800">New Cat</h3>
-          {formError && <div className="text-red-600 text-body-sm">{formError}</div>}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block font-semibold text-caption text-gray-700 mb-1 uppercase tracking-wider">Name *</label>
-              <input
-                type="text"
-                value={form.name}
-                onChange={set('name')}
-                className="w-full text-body border border-gray-300 rounded-lg px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary"
-                required
-              />
-            </div>
-            <div>
-              <label className="block font-semibold text-caption text-gray-700 mb-1 uppercase tracking-wider">Breed</label>
-              <input
-                type="text"
-                value={form.breed}
-                onChange={set('breed')}
-                className="w-full text-body border border-gray-300 rounded-lg px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary"
-              />
-            </div>
-            <div>
-              <label className="block font-semibold text-caption text-gray-700 mb-1 uppercase tracking-wider">Sex</label>
-              <select
-                value={form.sex}
-                onChange={set('sex')}
-                className="w-full text-body border border-gray-300 rounded-lg px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary"
-              >
-                <option value="">—</option>
-                <option value="M">Male</option>
-                <option value="F">Female</option>
-              </select>
-            </div>
-            <div>
-              <label className="block font-semibold text-caption text-gray-700 mb-1 uppercase tracking-wider">Notes</label>
-              <input
-                type="text"
-                value={form.notes}
-                onChange={set('notes')}
-                className="w-full text-body border border-gray-300 rounded-lg px-4 py-3 focus:border-primary focus:ring-1 focus:ring-primary"
-                maxLength={500}
-              />
-            </div>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button type="submit" variant="primary" disabled={createCat.isPending} className="w-full sm:w-auto">
-              {createCat.isPending ? 'Adding...' : 'Add Cat'}
-            </Button>
-            <Button variant="secondary" onClick={() => setShowForm(false)} className="w-full sm:w-auto">
-              Cancel
-            </Button>
-          </div>
-        </form>
-      )}
+          <PlusIcon className="h-5 w-5" aria-hidden /> Add Cat
+        </Button>
+      </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {cats?.map(({ cat, vaccines }) => (
@@ -149,11 +101,40 @@ export function DashboardPage() {
       </div>
 
       {(!cats || cats.length === 0) && (
-        <div className="text-center py-12 text-gray-400">
-          <p className="text-h2">No cats yet</p>
-          <p className="text-body-sm">Add a cat to get started</p>
+        <div className="text-center py-16 text-gray-400">
+          <p className="text-h2 mb-2">No cats yet</p>
+          <p className="text-body-sm">Add your first cat to start tracking vaccines</p>
         </div>
       )}
+
+      <Modal open={showForm} onClose={() => setShowForm(false)} title="Add Cat">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <Field label="Name *" htmlFor="cat-name" error={errors.name?.message}>
+            <Input id="cat-name" {...register('name')} error={errors.name} required />
+          </Field>
+          <Field label="Breed" htmlFor="cat-breed" error={errors.breed?.message}>
+            <Input id="cat-breed" {...register('breed')} error={errors.breed} />
+          </Field>
+          <Field label="Sex" htmlFor="cat-sex" error={errors.sex?.message}>
+            <Select id="cat-sex" {...register('sex')} error={errors.sex}>
+              <option value="">—</option>
+              <option value="M">Male</option>
+              <option value="F">Female</option>
+            </Select>
+          </Field>
+          <Field label="Notes" htmlFor="cat-notes" error={errors.notes?.message}>
+            <Textarea id="cat-notes" {...register('notes')} error={errors.notes} maxLength={500} />
+          </Field>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="secondary" type="button" onClick={() => setShowForm(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" loading={isSubmitting}>
+              Add Cat
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }
