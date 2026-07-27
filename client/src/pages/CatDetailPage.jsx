@@ -231,8 +231,8 @@ export function CatDetailPage() {
               )}
             />
           </Field>
-          <Field label="Interval (months, optional)" htmlFor="vax-interval" error={vaxForm.formState.errors.intervalMonths?.message}>
-            <Input id="vax-interval" type="number" {...vaxForm.register('intervalMonths')} error={vaxForm.formState.errors.intervalMonths} min={1} max={120} />
+          <Field label="Interval (months)" htmlFor="vax-interval" error={vaxForm.formState.errors.intervalMonths?.message}>
+            <Input id="vax-interval" type="number" placeholder="e.g. 12" {...vaxForm.register('intervalMonths')} error={vaxForm.formState.errors.intervalMonths} min={1} max={120} />
           </Field>
           <Field label="Notes (optional)" htmlFor="vax-notes" error={vaxForm.formState.errors.notes?.message}>
             <Textarea id="vax-notes" {...vaxForm.register('notes')} error={vaxForm.formState.errors.notes} maxLength={500} />

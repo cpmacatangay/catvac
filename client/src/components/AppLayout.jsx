@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth.js'
 import { Logo, LogoWordmark } from './Logo.jsx'
 import { Button } from './Button.jsx'
@@ -5,6 +6,13 @@ import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline'
 
 export function AppLayout({ children }) {
   const { logout } = useAuth()
+  const [loggingOut, setLoggingOut] = useState(false)
+
+  async function handleLogout() {
+    if (loggingOut) return
+    setLoggingOut(true)
+    await logout()
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -21,7 +29,7 @@ export function AppLayout({ children }) {
             <Logo className="h-9 w-9" />
             <LogoWordmark size="text-h3" />
           </div>
-          <Button variant="ghost" onClick={logout}>
+          <Button variant="ghost" onClick={handleLogout} disabled={loggingOut} loading={loggingOut}>
             <ArrowRightOnRectangleIcon className="h-5 w-5" aria-hidden />
             Log out
           </Button>

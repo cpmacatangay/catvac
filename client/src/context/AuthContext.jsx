@@ -35,7 +35,11 @@ export function AuthProvider({ children }) {
   }, [])
 
   const logout = useCallback(async () => {
-    await api('/auth/logout', { method: 'POST' })
+    try {
+      await api('/auth/logout', { method: 'POST' })
+    } catch {
+      // Clear local state regardless of server response
+    }
     setUser(null)
   }, [])
 
