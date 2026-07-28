@@ -8,11 +8,15 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    setOnUnauthorized(() => setUser(null))
+    setOnUnauthorized(() => { setUser(null); localStorage.removeItem('catvac_session') })
     let cancelled = false
+    if (!localStorage.getItem('catvac_session')) {
+      setIsLoading(false)
+      return
+    }
     api('/auth/me')
       .then((data) => { if (!cancelled) setUser(data.user) })
-      .catch(() => {})
+      .catch(() => { localStorage.removeItem('catvac_session') })
       .finally(() => { if (!cancelled) setIsLoading(false) })
     return () => { cancelled = true }
   }, [])
@@ -22,6 +26,7 @@ export function AuthProvider({ children }) {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     })
+    localStorage.setItem('catvac_session', '1')
     setUser(data.user)
     return data.user
   }, [])
@@ -31,6 +36,7 @@ export function AuthProvider({ children }) {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     })
+    localStorage.setItem('catvac_session', '1')
     setUser(data.user)
     return data.user
   }, [])
@@ -41,6 +47,7 @@ export function AuthProvider({ children }) {
     } catch {
       // Clear local state regardless of server response
     }
+    localStorage.removeItem('catvac_session')
     setUser(null)
   }, [])
 

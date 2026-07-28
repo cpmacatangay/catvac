@@ -1,21 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeftIcon, PencilSquareIcon, TrashIcon, PlusIcon, CalendarDaysIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftIcon, PencilSquareIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import {
-  DatePicker,
-  DateInput,
-  DateSegment,
-  Group,
-  Popover,
-  Button as AriaButton,
-  Calendar,
-  CalendarGrid,
-  CalendarCell,
-  Heading,
-} from 'react-aria-components'
-import { parseDate } from '@internationalized/date'
 import { useCat, useUpdateCat, useDeleteCat } from '../hooks/useCats.js'
 import { useVaccines, useCreateVaccine } from '../hooks/useVaccines.js'
 import { useToast } from '../context/ToastContext.jsx'
@@ -24,7 +11,7 @@ import { Button } from '../components/Button.jsx'
 import { VaccineRow } from '../components/VaccineRow.jsx'
 import { ConfirmDialog } from '../components/ConfirmDialog.jsx'
 import { Modal } from '../components/Modal.jsx'
-import { DetailSkeleton } from '../components/Skeletons.jsx'
+import { VaccineRowSkeleton } from '../components/Skeletons.jsx'
 import { Field } from '../components/Field.jsx'
 import { Input } from '../components/Input.jsx'
 import { Select } from '../components/Select.jsx'
@@ -105,7 +92,23 @@ export function CatDetailPage() {
   }
 
   if (catLoading || vaxLoading) {
-    return <DetailSkeleton />
+    return (
+      <div className="max-w-3xl mx-auto px-4 md:px-6 py-8 space-y-6 motion-safe:animate-pulse">
+        <div className="flex items-center gap-3">
+          <div className="w-14 h-14 rounded-full bg-gray-200 shrink-0" />
+          <div className="space-y-2">
+            <div className="h-6 bg-gray-200 rounded w-40" />
+            <div className="h-4 bg-gray-200 rounded w-24" />
+          </div>
+        </div>
+        <div className="space-y-3">
+          <div className="h-5 bg-gray-200 rounded w-24" />
+          <VaccineRowSkeleton />
+          <VaccineRowSkeleton />
+          <VaccineRowSkeleton />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -188,49 +191,16 @@ export function CatDetailPage() {
               name="dueDate"
               control={vaxForm.control}
               render={({ field }) => (
-                <DatePicker
-                  value={field.value ? parseDate(field.value.split('T')[0]) : undefined}
-                  onChange={(value) => {
-                    if (value) {
-                      const iso = value.toDate('UTC').toISOString()
-                      field.onChange(iso)
-                    }
-                  }}
-                  isRequired
-                  granularity="day"
-                  className="w-full min-w-0"
-                >
-                  <Group className="flex items-center w-full text-body border border-gray-300 rounded-lg px-4 py-3 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary bg-white gap-1">
-                    <DateInput className="flex-1 flex gap-1 items-center min-w-0">
-                      {(segment) => (
-                        <DateSegment
-                          segment={segment}
-                          className="focus:outline-none focus:bg-primary-light focus:text-primary rounded px-1 py-0.5 text-center box-content"
-                        />
-                      )}
-                    </DateInput>
-                    <AriaButton>
-                      <CalendarDaysIcon className="h-5 w-5 text-gray-400" aria-hidden />
-                    </AriaButton>
-                  </Group>
-                  <Popover>
-                    <Calendar className="bg-white shadow-elevated rounded-lg p-4 min-w-[260px]">
-                      <header className="flex items-center justify-between mb-2">
-                        <AriaButton slot="previous" className="text-primary hover:text-primary-hover text-lg">◀</AriaButton>
-                        <Heading className="font-heading text-subtitle text-gray-800" />
-                        <AriaButton slot="next" className="text-primary hover:text-primary-hover text-lg">▶</AriaButton>
-                      </header>
-                      <CalendarGrid className="w-full">
-                        {(date) => (
-                          <CalendarCell
-                            date={date}
-                            className="text-center py-1.5 rounded hover:bg-primary-light hover:text-primary cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary aria-selected:bg-primary aria-selected:text-white text-body-sm"
-                          />
-                        )}
-                      </CalendarGrid>
-                    </Calendar>
-                  </Popover>
-                </DatePicker>
+                <Input
+                  id="vax-due"
+                  type="date"
+                  value={field.value ? field.value.split('T')[0] : ''}
+                  onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value + 'T00:00:00.000Z').toISOString() : '')}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  error={vaxForm.formState.errors.dueDate}
+                  required
+                />
               )}
             />
           </Field>

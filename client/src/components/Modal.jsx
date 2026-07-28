@@ -24,8 +24,11 @@ export function Modal({ open, onClose, title, children }) {
 
   useEffect(() => {
     if (!open) return
-    const firstFocusable = dialogRef.current?.querySelector('button, input, select, textarea, [tabindex]:not([tabindex="-1"])')
-    firstFocusable?.focus()
+    const raf = requestAnimationFrame(() => {
+      const firstFocusable = dialogRef.current?.querySelector('button, input, select, textarea, [tabindex]:not([tabindex="-1"])')
+      firstFocusable?.focus()
+    })
+    return () => cancelAnimationFrame(raf)
   }, [open])
 
   if (!open) return null
