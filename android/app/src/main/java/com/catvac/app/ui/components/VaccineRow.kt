@@ -20,6 +20,7 @@ fun VaccineRow(
     vaccine: VaccineDto,
     onAdminister: () -> Unit,
     onSnooze: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -70,6 +71,12 @@ fun VaccineRow(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                IconButton(
+                    onClick = onEdit,
+                    modifier = Modifier.size(36.dp),
+                ) {
+                    Icon(Icons.Outlined.Edit, "Edit", modifier = Modifier.size(20.dp))
+                }
                 if (!vaccine.administered) {
                     FilledTonalButton(
                         onClick = onAdminister,

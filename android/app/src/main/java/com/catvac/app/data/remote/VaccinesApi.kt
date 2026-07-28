@@ -11,6 +11,12 @@ interface VaccinesApi {
     @POST("vaccines")
     suspend fun create(@Body body: CreateVaccineRequest): Response<VaccineResponse>
 
+    @PATCH("vaccines/{id}")
+    suspend fun update(
+        @Path("id") id: String,
+        @Body body: UpdateVaccineRequest,
+    ): Response<VaccineResponse>
+
     @PATCH("vaccines/{id}/administer")
     suspend fun administer(
         @Path("id") id: String,

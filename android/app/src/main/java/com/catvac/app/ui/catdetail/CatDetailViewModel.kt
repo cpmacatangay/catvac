@@ -84,6 +84,26 @@ class CatDetailViewModel @Inject constructor(
         }
     }
 
+    fun updateVaccine(vaccineId: String, catId: String, name: String, dueDate: String, intervalMonths: Int?) {
+        viewModelScope.launch {
+            mutex.withLock {
+                vaccinesRepository.update(
+                    vaccineId,
+                    UpdateVaccineRequest(
+                        name = name,
+                        dueDate = dueDate,
+                        intervalMonths = intervalMonths.takeIf { it != null && it > 0 },
+                    )
+                ).onSuccess {
+                    _snackbar.value = "Vaccine updated"
+                    load(catId)
+                }.onFailure { e ->
+                    _snackbar.value = e.message ?: "Failed to update vaccine"
+                }
+            }
+        }
+    }
+
     fun addVaccine(catId: String, name: String, dueDate: String, intervalMonths: Int, notes: String) {
         viewModelScope.launch {
             mutex.withLock {

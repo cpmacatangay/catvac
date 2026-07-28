@@ -27,6 +27,15 @@ class VaccinesRepository @Inject constructor(
         }
     }
 
+    suspend fun update(id: String, request: UpdateVaccineRequest): Result<VaccineDto> = safeCall {
+        val response = vaccinesApi.update(id, request)
+        if (response.isSuccessful) {
+            Result.success(response.body()!!.vaccine)
+        } else {
+            Result.failure(parseError(response.code(), response.errorBody()?.string()))
+        }
+    }
+
     suspend fun administer(id: String, request: AdministerRequest): Result<AdministerResponse> = safeCall {
         val response = vaccinesApi.administer(id, request)
         if (response.isSuccessful) {

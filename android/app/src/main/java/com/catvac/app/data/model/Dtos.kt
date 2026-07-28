@@ -115,6 +115,13 @@ data class CreateVaccineRequest(
     val intervalMonths: Int? = null,
 )
 
+data class UpdateVaccineRequest(
+    val name: String? = null,
+    val dueDate: String? = null,
+    val intervalMonths: Int? = null,
+    val notes: String? = null,
+)
+
 data class AdministerRequest(
     val administeredDate: String? = null,
     val note: String? = null,

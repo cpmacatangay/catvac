@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -107,6 +109,7 @@ private fun CatDetailContent(
     var showDeleteConfirm by remember { mutableStateOf(false) }
     var showAddVax by remember { mutableStateOf(false) }
     var deleteVaxId by remember { mutableStateOf<String?>(null) }
+    var editVaxId by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -186,6 +189,7 @@ private fun CatDetailContent(
                     vaccine = vax,
                     onAdminister = { viewModel.administerVaccine(vax.id, catId) },
                     onSnooze = { viewModel.snoozeVaccine(vax.id, catId) },
+                    onEdit = { editVaxId = vax.id },
                     onDelete = { deleteVaxId = vax.id },
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
@@ -252,6 +256,22 @@ private fun CatDetailContent(
                 showAddVax = false
             },
         )
+    }
+
+    editVaxId?.let { vaxId ->
+        val vax = vaccines.firstOrNull { it.id == vaxId }
+        if (vax != null) {
+            EditVaccineDialog(
+                vaccineName = vax.name,
+                vaccineDueDate = vax.dueDate,
+                vaccineIntervalMonths = vax.intervalMonths,
+                onDismiss = { editVaxId = null },
+                onSubmit = { name, dueDate, intervalMonths ->
+                    viewModel.updateVaccine(vaxId, catId, name, dueDate, intervalMonths)
+                    editVaxId = null
+                },
+            )
+        }
     }
 
     deleteVaxId?.let { vaxId ->
@@ -352,6 +372,106 @@ private fun EditCatDialog(
                     enabled = name.isNotBlank()) { Text("Save") }
             }
             Spacer(Modifier.height(16.dp))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EditVaccineDialog(
+    vaccineName: String,
+    vaccineDueDate: String,
+    vaccineIntervalMonths: Int?,
+    onDismiss: () -> Unit,
+    onSubmit: (name: String, dueDate: String, intervalMonths: Int?) -> Unit,
+) {
+    var name by remember { mutableStateOf(vaccineName) }
+    var dueDate by remember { mutableStateOf(vaccineDueDate.take(10)) }
+    var intervalMonths by remember { mutableStateOf(vaccineIntervalMonths?.toString() ?: "") }
+    var showDatePicker by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text("Edit Vaccine", style = MaterialTheme.typography.headlineMedium)
+            Spacer(Modifier.height(4.dp))
+            OutlinedTextField(
+                value = name, onValueChange = { name = it },
+                label = { Text("Vaccine Name") }, singleLine = true,
+                shape = MaterialTheme.shapes.medium,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Box {
+                OutlinedTextField(
+                    value = dueDate,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Due Date") },
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.medium,
+                    trailingIcon = { Icon(Icons.Outlined.CalendarMonth, "Pick date") },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clickable { showDatePicker = true },
+                )
+            }
+            OutlinedTextField(
+                value = intervalMonths, onValueChange = { intervalMonths = it },
+                label = { Text("Interval (months)") }, singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                supportingText = { Text("Optional", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                shape = MaterialTheme.shapes.medium,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onDismiss) { Text("Cancel") }
+                Spacer(Modifier.width(8.dp))
+                Button(
+                    onClick = {
+                        if (name.isNotBlank() && dueDate.isNotBlank()) {
+                            onSubmit(name, dueDate, intervalMonths.toIntOrNull())
+                        }
+                    },
+                    enabled = name.isNotBlank() && dueDate.isNotBlank(),
+                ) { Text("Save") }
+            }
+            Spacer(Modifier.height(16.dp))
+        }
+    }
+
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val fmt = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US)
+                        fmt.timeZone = java.util.TimeZone.getTimeZone("UTC")
+                        dueDate = fmt.format(java.util.Date(millis))
+                    }
+                    showDatePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            },
+        ) {
+            DatePicker(state = datePickerState)
         }
     }
 }
