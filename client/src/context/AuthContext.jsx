@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useCallback } from 'react'
-import { api } from '../lib/api.js'
+import { api, setOnUnauthorized } from '../lib/api.js'
 
 export const AuthContext = createContext(null)
 
@@ -8,6 +8,7 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    setOnUnauthorized(() => setUser(null))
     let cancelled = false
     api('/auth/me')
       .then((data) => { if (!cancelled) setUser(data.user) })

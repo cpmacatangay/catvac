@@ -8,6 +8,16 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/catvac
 
 validateEnv()
 
+process.on('unhandledRejection', (reason) => {
+  console.error('UNHANDLED REJECTION — shutting down', reason)
+  process.exit(1)
+})
+
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION — shutting down', err)
+  process.exit(1)
+})
+
 async function main() {
   await mongoose.connect(MONGODB_URI)
   console.log('Connected to MongoDB')
@@ -17,11 +27,11 @@ async function main() {
   startReminderEngine()
 
   app.listen(PORT, () => {
-    console.log(`🟢 Server running on port ${PORT}`)
+    console.log(`Server running on port ${PORT}`)
   })
 }
 
 main().catch((err) => {
-  console.error('🔴 Failed to start server', err)
+  console.error('Failed to start server', err)
   process.exit(1)
 })
