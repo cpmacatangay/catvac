@@ -17,8 +17,14 @@ class EncryptedTokenStore(context: Context) {
         try {
             buildEncryptedPrefs(context)
         } catch (e: Exception) {
-            prefsFile.delete()
-            buildEncryptedPrefs(context)
+            try {
+                prefsFile.delete()
+                context.getSharedPreferences("catvac_auth", Context.MODE_PRIVATE)
+                    .edit().clear().apply()
+                buildEncryptedPrefs(context)
+            } catch (e2: Exception) {
+                context.getSharedPreferences("catvac_auth_plain", Context.MODE_PRIVATE)
+            }
         }
     }
 
@@ -36,17 +42,29 @@ class EncryptedTokenStore(context: Context) {
     }
 
     fun saveToken(token: String) {
-        prefs.edit().putString(KEY_TOKEN, token).apply()
+        try {
+            prefs.edit().putString(KEY_TOKEN, token).apply()
+        } catch (_: Exception) {}
     }
 
-    fun getToken(): String? = prefs.getString(KEY_TOKEN, null)
+    fun getToken(): String? = try {
+        prefs.getString(KEY_TOKEN, null)
+    } catch (_: Exception) {
+        null
+    }
 
     fun saveUser(user: UserDto) {
-        prefs.edit().putString(KEY_USER, gson.toJson(user)).apply()
+        try {
+            prefs.edit().putString(KEY_USER, gson.toJson(user)).apply()
+        } catch (_: Exception) {}
     }
 
     fun getUser(): UserDto? {
-        val json = prefs.getString(KEY_USER, null) ?: return null
+        val json = try {
+            prefs.getString(KEY_USER, null)
+        } catch (_: Exception) {
+            null
+        } ?: return null
         return try {
             gson.fromJson(json, UserDto::class.java)
         } catch (_: Exception) {
@@ -55,7 +73,9 @@ class EncryptedTokenStore(context: Context) {
     }
 
     fun clear() {
-        prefs.edit().remove(KEY_TOKEN).remove(KEY_USER).apply()
+        try {
+            prefs.edit().remove(KEY_TOKEN).remove(KEY_USER).apply()
+        } catch (_: Exception) {}
     }
 
     companion object {

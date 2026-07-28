@@ -8,7 +8,7 @@ class BearerAuthInterceptor(
     private val sessionManager: SessionManager,
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
-        val token = sessionManager.getToken()
+        val token = try { sessionManager.getToken() } catch (_: Exception) { null }
         val request = if (token != null) {
             chain.request().newBuilder()
                 .addHeader("Authorization", "Bearer $token")

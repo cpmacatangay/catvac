@@ -43,6 +43,16 @@ fun CatVacNavHost(
         }
     }
 
+    LaunchedEffect(state.isLoggedIn) {
+        if (state.isInitialLoading) return@LaunchedEffect
+        val dest = if (state.isLoggedIn) "dashboard" else "login"
+        if (navController.currentDestination?.route != dest) {
+            navController.navigate(dest) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = "splash",

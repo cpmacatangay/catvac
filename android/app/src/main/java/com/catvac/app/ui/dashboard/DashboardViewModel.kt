@@ -99,9 +99,13 @@ class DashboardViewModel @Inject constructor(
                     if (task.isSuccessful) {
                         val token = task.result
                         viewModelScope.launch {
-                            devicesApi.register(
-                                RegisterDeviceRequest(token = token)
-                            )
+                            try {
+                                devicesApi.register(
+                                    RegisterDeviceRequest(token = token)
+                                )
+                            } catch (_: Exception) {
+                                // Device registration is best-effort; ignore failures
+                            }
                         }
                     }
                 }
