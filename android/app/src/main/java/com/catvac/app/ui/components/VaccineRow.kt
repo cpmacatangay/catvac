@@ -15,6 +15,11 @@ import com.catvac.app.data.model.VaccineDto
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+private sealed interface ConfirmAction {
+    data object Administer : ConfirmAction
+    data object Snooze : ConfirmAction
+}
+
 @Composable
 fun VaccineRow(
     vaccine: VaccineDto,
@@ -24,6 +29,7 @@ fun VaccineRow(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var confirmAction by remember { mutableStateOf<ConfirmAction?>(null) }
     val dueStr = try {
         val date = LocalDate.parse(vaccine.dueDate, DateTimeFormatter.ISO_DATE_TIME)
         date.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))
@@ -79,7 +85,7 @@ fun VaccineRow(
                 }
                 if (!vaccine.administered) {
                     FilledTonalButton(
-                        onClick = onAdminister,
+                        onClick = { confirmAction = ConfirmAction.Administer },
                         modifier = Modifier.height(36.dp),
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                     ) {
@@ -89,7 +95,7 @@ fun VaccineRow(
                     }
                     Spacer(Modifier.width(8.dp))
                     FilledTonalButton(
-                        onClick = onSnooze,
+                        onClick = { confirmAction = ConfirmAction.Snooze },
                         modifier = Modifier.height(36.dp),
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                     ) {
@@ -105,6 +111,36 @@ fun VaccineRow(
                 ) {
                     Icon(Icons.Outlined.Delete, "Delete", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
                 }
+            }
+
+            when (confirmAction) {
+                ConfirmAction.Administer -> {
+                    AlertDialog(
+                        onDismissRequest = { confirmAction = null },
+                        title = { Text("Mark as administered?") },
+                        text = { Text("${vaccine.name} will be marked as done.${if (vaccine.intervalMonths != null) " A booster will be auto-scheduled." else ""}") },
+                        confirmButton = {
+                            Button(onClick = { confirmAction = null; onAdminister() }) { Text("Done") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { confirmAction = null }) { Text("Cancel") }
+                        },
+                    )
+                }
+                ConfirmAction.Snooze -> {
+                    AlertDialog(
+                        onDismissRequest = { confirmAction = null },
+                        title = { Text("Snooze 30 days?") },
+                        text = { Text("${vaccine.name} will be snoozed for 30 days.") },
+                        confirmButton = {
+                            Button(onClick = { confirmAction = null; onSnooze() }) { Text("Snooze") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { confirmAction = null }) { Text("Cancel") }
+                        },
+                    )
+                }
+                null -> {}
             }
         }
     }

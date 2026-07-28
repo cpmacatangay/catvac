@@ -12,6 +12,7 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,7 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.catvac.app.ui.components.VaccineRow
+import com.catvac.app.ui.components.VaccineRowSkeleton
 import com.catvac.app.ui.components.DetailSkeleton
+import com.catvac.app.ui.components.ShimmerBox
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,10 +68,28 @@ fun CatDetailScreen(
             )
         },
     ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+        PullToRefreshBox(
+            isRefreshing = viewModel.isRefreshing.collectAsState().value,
+            onRefresh = { viewModel.refresh(catId) },
+            modifier = Modifier.fillMaxSize().padding(padding),
+        ) {
             when (val s = state) {
                 is CatDetailUiState.Loading -> {
-                    DetailSkeleton()
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            ShimmerBox(width = 56, height = 56, shape = CircleShape)
+                            Spacer(Modifier.width(12.dp))
+                            Column {
+                                ShimmerBox(height = 22, width = 160)
+                                Spacer(Modifier.height(6.dp))
+                                ShimmerBox(height = 14, width = 100)
+                            }
+                        }
+                        Spacer(Modifier.height(32.dp))
+                        ShimmerBox(height = 22, width = 100)
+                        Spacer(Modifier.height(12.dp))
+                        repeat(3) { VaccineRowSkeleton(); Spacer(Modifier.height(8.dp)) }
+                    }
                 }
                 is CatDetailUiState.Error -> {
                     Column(

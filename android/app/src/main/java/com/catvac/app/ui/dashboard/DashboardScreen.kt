@@ -1,9 +1,5 @@
 package com.catvac.app.ui.dashboard
 
-import android.Manifest
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -16,6 +12,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +35,9 @@ fun DashboardScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val addCatState by viewModel.addCatState.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
     var showAddCat by remember { mutableStateOf(false) }
+    var showLogoutConfirm by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(addCatState) {
@@ -53,18 +52,6 @@ fun DashboardScreen(
                 viewModel.resetAddCatState()
             }
             else -> {}
-        }
-    }
-
-    val notifLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { /* granted or not — app works without */ }
-
-    LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= 33) {
-            try {
-                notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            } catch (_: Exception) { }
         }
     }
 
@@ -83,14 +70,18 @@ fun DashboardScreen(
                     IconButton(onClick = { showAddCat = true }) {
                         Icon(Icons.Outlined.Add, "Add cat")
                     }
-                    TextButton(onClick = onLogout) {
+                    TextButton(onClick = { showLogoutConfirm = true }) {
                         Text("Log out")
                     }
                 },
             )
         },
     ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { viewModel.refreshDashboard() },
+            modifier = Modifier.fillMaxSize().padding(padding),
+        ) {
             when (val s = state) {
                 is DashboardUiState.Loading -> {
                     Column(Modifier.fillMaxSize().padding(16.dp)) {
@@ -151,6 +142,20 @@ fun DashboardScreen(
             onSubmit = { name, breed, sex, notes ->
                 showAddCat = false
                 viewModel.addCat(name, breed, sex, notes)
+            },
+        )
+    }
+
+    if (showLogoutConfirm) {
+        AlertDialog(
+            onDismissRequest = { showLogoutConfirm = false },
+            title = { Text("Log out?") },
+            text = { Text("Are you sure you want to log out?") },
+            confirmButton = {
+                Button(onClick = { showLogoutConfirm = false; onLogout() }) { Text("Log out") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutConfirm = false }) { Text("Cancel") }
             },
         )
     }

@@ -34,7 +34,7 @@ fun CatVacNavHost(
 
     LaunchedEffect(state.isInitialLoading) {
         if (state.isInitialLoading) return@LaunchedEffect
-        kotlinx.coroutines.delay(1000)
+        kotlinx.coroutines.delay(3000)
         val dest = if (state.isLoggedIn) "dashboard" else "login"
         if (navController.currentDestination?.route != dest) {
             navController.navigate(dest) {

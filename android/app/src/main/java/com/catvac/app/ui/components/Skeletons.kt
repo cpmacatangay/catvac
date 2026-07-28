@@ -34,7 +34,7 @@ private fun ShimmerAlpha(): Float {
 }
 
 @Composable
-private fun ShimmerBox(
+internal fun ShimmerBox(
     width: Int? = null,
     height: Int = 16,
     shape: androidx.compose.ui.graphics.Shape = RoundedCornerShape(4.dp),

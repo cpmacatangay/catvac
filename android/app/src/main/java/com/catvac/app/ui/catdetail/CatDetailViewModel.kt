@@ -31,6 +31,10 @@ class CatDetailViewModel @Inject constructor(
 
     private val _snackbar = MutableStateFlow<String?>(null)
     val snackbar: StateFlow<String?> = _snackbar.asStateFlow()
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
     private val mutex = Mutex()
 
     fun load(catId: String) {
@@ -45,6 +49,21 @@ class CatDetailViewModel @Inject constructor(
             }.onFailure { e ->
                 _state.value = CatDetailUiState.Error(e.message ?: "Failed to load cat")
             }
+        }
+    }
+
+    fun refresh(catId: String) {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            val catResult = catsRepository.getById(catId)
+            val vaxResult = vaccinesRepository.listByCat(catId)
+            catResult.onSuccess { cat ->
+                val vaccines = vaxResult.getOrDefault(emptyList())
+                _state.value = CatDetailUiState.Success(cat, vaccines)
+            }.onFailure { e ->
+                _state.value = CatDetailUiState.Error(e.message ?: "Failed to load cat")
+            }
+            _isRefreshing.value = false
         }
     }
 

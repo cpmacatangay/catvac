@@ -42,6 +42,9 @@ class DashboardViewModel @Inject constructor(
     private val _addCatState = MutableStateFlow<AddCatState>(AddCatState.Idle)
     val addCatState: StateFlow<AddCatState> = _addCatState.asStateFlow()
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
     init {
         loadDashboard()
     }
@@ -57,6 +60,21 @@ class DashboardViewModel @Inject constructor(
                 .onFailure { e ->
                     _uiState.value = DashboardUiState.Error(e.message ?: "Failed to load dashboard")
                 }
+        }
+    }
+
+    fun refreshDashboard() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            dashboardRepository.getDashboard()
+                .onSuccess { items ->
+                    _uiState.value = DashboardUiState.Success(items)
+                    registerDeviceToken()
+                }
+                .onFailure { e ->
+                    _uiState.value = DashboardUiState.Error(e.message ?: "Failed to load dashboard")
+                }
+            _isRefreshing.value = false
         }
     }
 
