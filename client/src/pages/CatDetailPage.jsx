@@ -45,7 +45,10 @@ export function CatDetailPage() {
   const [showVaxModal, setShowVaxModal] = useState(false)
 
   const editForm = useForm({ resolver: zodResolver(catSchema) })
-  const vaxForm = useForm({ resolver: zodResolver(vaccineSchema) })
+  const vaxForm = useForm({
+    resolver: zodResolver(vaccineSchema),
+    defaultValues: { name: '', dueDate: '', intervalMonths: null, notes: '' },
+  })
 
   useEffect(() => {
     if (cat && showEditModal) {
@@ -232,7 +235,24 @@ export function CatDetailPage() {
             />
           </Field>
           <Field label="Interval (months)" htmlFor="vax-interval" error={vaxForm.formState.errors.intervalMonths?.message}>
-            <Input id="vax-interval" type="number" placeholder="e.g. 12" {...vaxForm.register('intervalMonths')} error={vaxForm.formState.errors.intervalMonths} min={1} max={120} />
+            <Controller
+              name="intervalMonths"
+              control={vaxForm.control}
+              render={({ field }) => (
+                <Input
+                  id="vax-interval"
+                  type="number"
+                  placeholder="e.g. 12"
+                  value={field.value ?? ''}
+                  onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  error={vaxForm.formState.errors.intervalMonths}
+                  min={1}
+                  max={120}
+                />
+              )}
+            />
           </Field>
           <Field label="Notes (optional)" htmlFor="vax-notes" error={vaxForm.formState.errors.notes?.message}>
             <Textarea id="vax-notes" {...vaxForm.register('notes')} error={vaxForm.formState.errors.notes} maxLength={500} />

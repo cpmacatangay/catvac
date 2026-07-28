@@ -44,6 +44,18 @@ export function useSnoozeVaccine() {
   })
 }
 
+export function useUpdateVaccine() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, catId, ...data }) =>
+      api(`/vaccines/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['vaccines', variables.catId] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+    },
+  })
+}
+
 export function useDeleteVaccine() {
   const queryClient = useQueryClient()
   return useMutation({
