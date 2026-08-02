@@ -25,9 +25,21 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.catvac.app.ui.components.VaccineRow
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import com.catvac.app.ui.components.VaccineRowSkeleton
 import com.catvac.app.ui.components.DetailSkeleton
 import com.catvac.app.ui.components.ShimmerBox
+
+private fun formatDueDateForDisplay(dueDate: String): String {
+    if (dueDate.isBlank()) return ""
+    return try {
+        LocalDate.parse(dueDate, DateTimeFormatter.ISO_DATE_TIME)
+            .format(DateTimeFormatter.ofPattern("MMM d, yyyy"))
+    } catch (_: Exception) {
+        dueDate.take(10)
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -286,9 +298,10 @@ private fun CatDetailContent(
                 vaccineName = vax.name,
                 vaccineDueDate = vax.dueDate,
                 vaccineIntervalMonths = vax.intervalMonths,
+                vaccineNotes = vax.notes,
                 onDismiss = { editVaxId = null },
-                onSubmit = { name, dueDate, intervalMonths ->
-                    viewModel.updateVaccine(vaxId, catId, name, dueDate, intervalMonths)
+                onSubmit = { name, dueDate, intervalMonths, notes ->
+                    viewModel.updateVaccine(vaxId, catId, name, dueDate, intervalMonths, notes)
                     editVaxId = null
                 },
             )
@@ -403,12 +416,14 @@ private fun EditVaccineDialog(
     vaccineName: String,
     vaccineDueDate: String,
     vaccineIntervalMonths: Int?,
+    vaccineNotes: String?,
     onDismiss: () -> Unit,
-    onSubmit: (name: String, dueDate: String, intervalMonths: Int?) -> Unit,
+    onSubmit: (name: String, dueDate: String, intervalMonths: Int?, notes: String?) -> Unit,
 ) {
     var name by remember { mutableStateOf(vaccineName) }
-    var dueDate by remember { mutableStateOf(vaccineDueDate.take(10)) }
+    var dueDate by remember { mutableStateOf(vaccineDueDate) }
     var intervalMonths by remember { mutableStateOf(vaccineIntervalMonths?.toString() ?: "") }
+    var notes by remember { mutableStateOf(vaccineNotes ?: "") }
     var showDatePicker by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -430,7 +445,7 @@ private fun EditVaccineDialog(
             )
             Box {
                 OutlinedTextField(
-                    value = dueDate,
+                    value = formatDueDateForDisplay(dueDate),
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Due Date") },
@@ -453,6 +468,12 @@ private fun EditVaccineDialog(
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
+            OutlinedTextField(
+                value = notes, onValueChange = { notes = it },
+                label = { Text("Notes (optional)") }, maxLines = 3,
+                shape = MaterialTheme.shapes.medium,
+                modifier = Modifier.fillMaxWidth(),
+            )
             Spacer(Modifier.height(8.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 TextButton(onClick = onDismiss) { Text("Cancel") }
@@ -460,7 +481,7 @@ private fun EditVaccineDialog(
                 Button(
                     onClick = {
                         if (name.isNotBlank() && dueDate.isNotBlank()) {
-                            onSubmit(name, dueDate, intervalMonths.toIntOrNull())
+                            onSubmit(name, dueDate, intervalMonths.toIntOrNull(), notes.ifBlank { null })
                         }
                     },
                     enabled = name.isNotBlank() && dueDate.isNotBlank(),
@@ -501,7 +522,7 @@ private fun EditVaccineDialog(
 @Composable
 private fun AddVaccineDialog(
     onDismiss: () -> Unit,
-    onSubmit: (name: String, dueDate: String, intervalMonths: Int, notes: String) -> Unit,
+    onSubmit: (name: String, dueDate: String, intervalMonths: Int?, notes: String) -> Unit,
 ) {
     var name by remember { mutableStateOf("") }
     var dueDate by remember { mutableStateOf("") }
@@ -528,7 +549,7 @@ private fun AddVaccineDialog(
             )
             Box {
                 OutlinedTextField(
-                    value = dueDate,
+                    value = formatDueDateForDisplay(dueDate),
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Due Date") },
@@ -564,7 +585,7 @@ private fun AddVaccineDialog(
                 Button(
                     onClick = {
                         if (name.isNotBlank() && dueDate.isNotBlank()) {
-                            onSubmit(name, dueDate, intervalMonths.toIntOrNull() ?: 0, notes)
+                            onSubmit(name, dueDate, intervalMonths.toIntOrNull(), notes)
                         }
                     },
                     enabled = name.isNotBlank() && dueDate.isNotBlank(),

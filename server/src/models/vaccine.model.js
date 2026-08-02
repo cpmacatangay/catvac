@@ -11,6 +11,7 @@ const vaccineSchema = new mongoose.Schema(
     administered: { type: Boolean, default: false },
     administeredDate: { type: Date, default: null },
     administeredNote: { type: String, default: null, maxlength: 500 },
+    notes: { type: String, default: null, maxlength: 500 },
     snoozedUntil: { type: Date, default: null },
   },
   { timestamps: true },
@@ -20,12 +21,14 @@ vaccineSchema.virtual('status').get(function () {
   const today = startOfDay(new Date())
   const due = startOfDay(this.dueDate)
   const diffDays = differenceInDays(due, today)
+  const leadDays = 7
 
   if (this.administered) return 'administered'
   if (this.snoozedUntil && this.snoozedUntil > today) return 'snoozed'
   if (diffDays < 0) return 'overdue'
   if (diffDays === 0) return 'due'
-  return 'pending'
+  if (diffDays <= leadDays) return 'upcoming'
+  return 'on-track'
 })
 
 vaccineSchema.set('toJSON', { virtuals: true })

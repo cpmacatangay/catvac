@@ -58,6 +58,7 @@ data class VaccineDto(
     val administered: Boolean = false,
     val administeredDate: String? = null,
     val administeredNote: String? = null,
+    val notes: String? = null,
     val snoozedUntil: String? = null,
     val status: VaccineStatus = VaccineStatus.UNKNOWN,
     val createdAt: String,

@@ -112,7 +112,7 @@ class CatDetailViewModel @Inject constructor(
         }
     }
 
-    fun updateVaccine(vaccineId: String, catId: String, name: String, dueDate: String, intervalMonths: Int?) {
+    fun updateVaccine(vaccineId: String, catId: String, name: String, dueDate: String, intervalMonths: Int?, notes: String?) {
         viewModelScope.launch {
             mutex.withLock {
                 vaccinesRepository.update(
@@ -121,6 +121,7 @@ class CatDetailViewModel @Inject constructor(
                         name = name,
                         dueDate = dueDate,
                         intervalMonths = intervalMonths.takeIf { it != null && it > 0 },
+                        notes = notes,
                     )
                 ).onSuccess {
                     _snackbar.value = "Vaccine updated"
@@ -132,7 +133,7 @@ class CatDetailViewModel @Inject constructor(
         }
     }
 
-    fun addVaccine(catId: String, name: String, dueDate: String, intervalMonths: Int, notes: String) {
+    fun addVaccine(catId: String, name: String, dueDate: String, intervalMonths: Int?, notes: String) {
         viewModelScope.launch {
             mutex.withLock {
                 vaccinesRepository.create(
@@ -140,7 +141,7 @@ class CatDetailViewModel @Inject constructor(
                         catId = catId,
                         name = name,
                         dueDate = dueDate,
-                        intervalMonths = intervalMonths.takeIf { it > 0 },
+                        intervalMonths = intervalMonths?.takeIf { it > 0 },
                         notes = notes.ifBlank { null },
                     )
                 ).onSuccess {
