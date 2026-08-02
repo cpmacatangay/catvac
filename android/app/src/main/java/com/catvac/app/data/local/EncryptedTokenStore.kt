@@ -72,6 +72,24 @@ class EncryptedTokenStore(context: Context) {
         }
     }
 
+    fun saveFcmToken(token: String) {
+        try {
+            prefs.edit().putString(KEY_FCM_TOKEN, token).apply()
+        } catch (_: Exception) {}
+    }
+
+    fun getFcmToken(): String? = try {
+        prefs.getString(KEY_FCM_TOKEN, null)
+    } catch (_: Exception) {
+        null
+    }
+
+    fun clearFcmToken() {
+        try {
+            prefs.edit().remove(KEY_FCM_TOKEN).apply()
+        } catch (_: Exception) {}
+    }
+
     fun clear() {
         try {
             prefs.edit().remove(KEY_TOKEN).remove(KEY_USER).apply()
@@ -81,5 +99,6 @@ class EncryptedTokenStore(context: Context) {
     companion object {
         private const val KEY_TOKEN = "jwt"
         private const val KEY_USER = "user"
+        private const val KEY_FCM_TOKEN = "fcm_token"
     }
 }

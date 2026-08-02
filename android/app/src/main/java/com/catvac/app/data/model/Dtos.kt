@@ -113,6 +113,7 @@ data class CreateVaccineRequest(
     val name: String,
     val dueDate: String,
     val intervalMonths: Int? = null,
+    val notes: String? = null,
 )
 
 data class UpdateVaccineRequest(

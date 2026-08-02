@@ -1147,3 +1147,4 @@ When the user base exceeds ~1000 active households or the single cron process be
 3. **Add Redis cache** — dashboard aggregation cached with 30s TTL.
 4. **Background job queues** — email sending via BullMQ with retry/exponential backoff/Dead Letter Queue.
 5. **Horizontal scaling** — stateless API behind a load balancer (session affinity not needed since JWT is self-contained).
+6. **Web Push (browser FCM/VAPID)** — If web users request push notifications, add a service-worker subscription flow, a VAPID keypair env (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`), a `pushSubscriptions` collection, and a `WebPushService` mirroring `PushService` for Android. Cron `ReminderService` would dispatch per-channel by recipient platform.

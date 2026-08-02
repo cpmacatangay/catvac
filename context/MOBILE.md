@@ -129,6 +129,10 @@ The full type scale is defined in `Type.kt` matching DESIGN.md §4:
 - **Integration with cron**: The nightly reminder engine (`ReminderService.processReminders`) runs both email and push passes. Both use the same `ReminderLog` dedup ledger with a `channel: 'email' | 'push'` discriminator.
 - **Env**: `FIREBASE_SERVICE_ACCOUNT` — path to the Firebase Admin SDK service account JSON (or the JSON string itself).
 
+### Web client scope
+
+The browser SPA (`client/`) does **not** receive push notifications. Web users are notified by **email only** via the existing Nodemailer reminder path in `reminder.service.js`. Web Push (Web Push API + VAPID + service worker + push subscription endpoint) is **out of scope for MVP** and tracked as a Phase 2 candidate (see `ARCHITECTURE.md §15`).
+
 ---
 
 ## 6. Business Logic Duplication

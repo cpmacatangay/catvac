@@ -1,5 +1,11 @@
 import * as deviceService from './device.service.js'
 
+const DEAD_TOKEN_CODES = new Set([
+  'messaging/registration-token-not-registered',
+  'messaging/invalid-registration',
+  'messaging/invalid-registration-token',
+])
+
 export class PushService {
   constructor(fcmClient, logger) {
     this.fcmClient = fcmClient
@@ -25,6 +31,19 @@ export class PushService {
       const response = await this.fcmClient.sendEachForMulticast(message)
       const sent = response.successCount || 0
       const failed = response.failureCount || 0
+
+      if (response.responses) {
+        for (let i = 0; i < response.responses.length; i++) {
+          const entry = response.responses[i]
+          if (entry.error && DEAD_TOKEN_CODES.has(entry.error.code)) {
+            try {
+              await deviceService.unregister(ownerId, registrationTokens[i])
+            } catch (unregErr) {
+              this.logger.warn(`Failed to prune dead token for owner ${ownerId}: ${unregErr.message}`)
+            }
+          }
+        }
+      }
 
       if (failed > 0) {
         this.logger.warn(`Push send partially failed for vaccine ${vaccine._id} (${type}): ${failed}/${registrationTokens.length} failed`)

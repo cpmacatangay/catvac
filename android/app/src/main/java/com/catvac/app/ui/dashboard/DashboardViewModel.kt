@@ -2,11 +2,12 @@ package com.catvac.app.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.catvac.app.BuildConfig
 import com.catvac.app.data.model.*
-import com.catvac.app.data.remote.DevicesApi
 import com.catvac.app.data.repository.AuthRepository
 import com.catvac.app.data.repository.CatsRepository
 import com.catvac.app.data.repository.DashboardRepository
+import com.catvac.app.data.repository.DevicesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,7 +34,7 @@ class DashboardViewModel @Inject constructor(
     private val dashboardRepository: DashboardRepository,
     private val catsRepository: CatsRepository,
     private val authRepository: AuthRepository,
-    private val devicesApi: DevicesApi,
+    private val devicesRepository: DevicesRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<DashboardUiState>(DashboardUiState.Loading)
@@ -118,8 +119,9 @@ class DashboardViewModel @Inject constructor(
                         val token = task.result
                         viewModelScope.launch {
                             try {
-                                devicesApi.register(
-                                    RegisterDeviceRequest(token = token)
+                                devicesRepository.register(
+                                    token,
+                                    BuildConfig.VERSION_NAME,
                                 )
                             } catch (_: Exception) {
                                 // Device registration is best-effort; ignore failures

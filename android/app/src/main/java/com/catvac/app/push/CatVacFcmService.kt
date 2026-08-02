@@ -3,6 +3,7 @@ package com.catvac.app.push
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
+import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
@@ -15,14 +16,16 @@ class CatVacFcmService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        // FCM token registration handled lazily by DashboardViewModel
+        Log.i(TAG, "New FCM token: $token")
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
 
-        message.notification?.let {
-            // System tray handled automatically by FCM for notification payloads
+        Log.i(TAG, "FCM message received: from=${message.from}, data=${message.data}")
+
+        message.notification?.let { notification ->
+            Log.i(TAG, "FCM notification: title=${notification.title}, body=${notification.body}")
         }
     }
 
@@ -42,5 +45,6 @@ class CatVacFcmService : FirebaseMessagingService() {
 
     companion object {
         const val CHANNEL_ID = "vaccine_reminders"
+        private const val TAG = "CatVacFCM"
     }
 }

@@ -4,13 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.catvac.app.data.model.UserDto
 import com.catvac.app.data.repository.AuthRepository
+import com.catvac.app.data.repository.DevicesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 
 data class AuthUiState(
@@ -22,6 +26,7 @@ data class AuthUiState(
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    private val devicesRepository: DevicesRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AuthUiState())
@@ -80,6 +85,16 @@ class AuthViewModel @Inject constructor(
 
     fun logout() {
         viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    withTimeout(2_000) {
+                        devicesRepository.unregister()
+                    }
+                }
+            } catch (_: Exception) {
+                // Best-effort fire-and-forget — ignore timeout/network errors
+            }
+
             try {
                 authRepository.logout()
             } catch (_: Exception) {

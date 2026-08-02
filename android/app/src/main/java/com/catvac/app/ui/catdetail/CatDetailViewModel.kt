@@ -6,6 +6,8 @@ import com.catvac.app.data.model.*
 import com.catvac.app.data.repository.CatsRepository
 import com.catvac.app.data.repository.VaccinesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,31 +42,38 @@ class CatDetailViewModel @Inject constructor(
     fun load(catId: String) {
         viewModelScope.launch {
             _state.value = CatDetailUiState.Loading
-            val catResult = catsRepository.getById(catId)
-            val vaxResult = vaccinesRepository.listByCat(catId)
-
-            catResult.onSuccess { cat ->
-                val vaccines = vaxResult.getOrDefault(emptyList())
-                _state.value = CatDetailUiState.Success(cat, vaccines)
-            }.onFailure { e ->
-                _state.value = CatDetailUiState.Error(e.message ?: "Failed to load cat")
-            }
+            runCatching { fetchCatDetail(catId) }
+                .onSuccess { _state.value = it }
+                .onFailure { e -> _state.value = CatDetailUiState.Error(e.message ?: "Failed to load cat") }
         }
     }
 
     fun refresh(catId: String) {
         viewModelScope.launch {
             _isRefreshing.value = true
-            val catResult = catsRepository.getById(catId)
-            val vaxResult = vaccinesRepository.listByCat(catId)
-            catResult.onSuccess { cat ->
-                val vaccines = vaxResult.getOrDefault(emptyList())
-                _state.value = CatDetailUiState.Success(cat, vaccines)
-            }.onFailure { e ->
-                _state.value = CatDetailUiState.Error(e.message ?: "Failed to load cat")
-            }
+            runCatching { fetchCatDetail(catId) }
+                .onSuccess { _state.value = it }
+                .onFailure { e -> _state.value = CatDetailUiState.Error(e.message ?: "Failed to load cat") }
             _isRefreshing.value = false
         }
+    }
+
+    private suspend fun fetchCatDetail(catId: String): CatDetailUiState = coroutineScope {
+        val catDeferred = async { catsRepository.getById(catId) }
+        val vaxDeferred = async { vaccinesRepository.listByCat(catId) }
+
+        val catResult = catDeferred.await()
+        val vaxResult = vaxDeferred.await()
+
+        catResult.fold(
+            onSuccess = { cat ->
+                val vaccines = vaxResult.getOrDefault(emptyList())
+                CatDetailUiState.Success(cat, vaccines)
+            },
+            onFailure = { e ->
+                CatDetailUiState.Error(e.message ?: "Failed to load cat")
+            },
+        )
     }
 
     fun updateCat(catId: String, name: String, breed: String, sex: String, notes: String) {
@@ -132,10 +141,11 @@ class CatDetailViewModel @Inject constructor(
                         name = name,
                         dueDate = dueDate,
                         intervalMonths = intervalMonths.takeIf { it > 0 },
+                        notes = notes.ifBlank { null },
                     )
                 ).onSuccess {
                     _snackbar.value = "Vaccine added"
-                    load(catId)
+                    refresh(catId)
                 }.onFailure { e ->
                     _snackbar.value = e.message ?: "Failed to add vaccine"
                 }
