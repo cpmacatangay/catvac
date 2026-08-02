@@ -12,6 +12,7 @@
 | `users` | Authentication + notification preferences | ~500 B | Permanent (hard-deleted on GDPR request) |
 | `cats` | Cat profiles per household | ~400 B | Soft-deleted (30-day purge window) |
 | `vaccines` | Vaccine entries + recurrence tracking | ~350 B | Permanent (hard-deleted with cat or user) |
+| `devicetokens` | FCM push notification device tokens | ~200 B | Permanent (hard-deleted with user or on logout) |
 | `reminderlog` | Idempotency ledger for reminder engine | ~200 B | TTL auto-delete after 90 days |
 | `_migrations` | migrate-mongo state tracking | ~200 B | Permanent (internal) |
 
@@ -55,6 +56,7 @@ erDiagram
         boolean   administered "default: false"
         date      administeredDate "null until set"
         string    administeredNote "null until set"
+        string    notes "optional, max 500"
         date      snoozedUntil "null = not snoozed"
         date      createdAt
         date      updatedAt
@@ -185,6 +187,7 @@ catSchema.pre(/^find/, function () {
 | `administered` | Boolean | no | `false` | — | Whether this occurrence is done |
 | `administeredDate` | Date | no | `null` | — | When the vaccine was given |
 | `administeredNote` | String | no | `null` | max 500 | Optional note (e.g. batch #, lot) |
+| `notes` | String | no | `null` | max 500 | General notes about the vaccine |
 | `snoozedUntil` | Date | no | `null` | — | Suppress reminders until this date |
 | `createdAt` | Date | auto | `new Date()` | immutable | Doc creation timestamp |
 | `updatedAt` | Date | auto | `new Date()` | — | Doc update timestamp |
@@ -202,6 +205,7 @@ const vaccineSchema = new mongoose.Schema(
     administered: { type: Boolean, default: false },
     administeredDate: { type: Date, default: null },
     administeredNote: { type: String, default: null, maxlength: 500 },
+    notes: { type: String, default: null, maxlength: 500 },
     snoozedUntil: { type: Date, default: null },
   },
   { timestamps: true }
@@ -215,14 +219,14 @@ vaccineSchema.virtual('status').get(function () {
   const today = startOfDay(new Date())
   const due = startOfDay(this.dueDate)
   const diffDays = differenceInDays(due, today)
+  const leadDays = 7 // default; dashboard overwrites with per-user prefs
 
   if (this.administered) return 'administered'
   if (this.snoozedUntil && this.snoozedUntil > today) return 'snoozed'
   if (diffDays < 0) return 'overdue'
   if (diffDays === 0) return 'due'
-  // 'upcoming' and 'on-track' assigned by the service layer
-  // since leadDays is user-configurable
-  return 'pending'
+  if (diffDays <= leadDays) return 'upcoming'
+  return 'on-track'
 })
 
 // Ensure virtuals are included in JSON output

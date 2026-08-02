@@ -1,5 +1,5 @@
 # Coding Rules — CatVac
-**Applicable to:** `server/` and `client/`  
+**Applicable to:** `server/`, `client/`, and `android/`  
 **Enforcement:** ESLint · Husky · PR Review  
 **Language:** JavaScript (ES2024+, Node LTS)  
 **Version:** MVP v1.0 · Status: Draft

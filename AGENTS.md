@@ -1,8 +1,8 @@
 # CatVac — Agent Instructions
 
-This is a **pre-code scaffold**. `client/` and `server/` do not exist yet — build them per the documents in `context/`.
+`client/`, `server/`, and `android/` are live codebases — follow the conventions below when editing.
 
-## Project Structure (to build)
+## Project Structure (current)
 
 ```
 catvac/
@@ -21,11 +21,13 @@ catvac/
 │       ├── models/       # Mongoose schemas
 │       ├── middleware/    # auth, validate, error, notFound
 │       ├── schemas/      # Zod validation
+│       ├── lib/           # Pure utilities (computeStatus, fcmClient, errors, env)
 │       ├── cron/         # node-cron reminder engine
 │       └── emails/       # HTML email templates (plain strings, no template engine)
 ├── android/              # Kotlin + Jetpack Compose (Material 3)
 │   └── app/src/main/java/com/catvac/app/
-│       ├── data/         # DTOs, APIs (Retrofit), repositories
+│       ├── data/         # DTOs, APIs (Retrofit), repositories, local (EncryptedTokenStore)
+│       ├── data/repository/  # AuthRepository, CatsRepository, VaccinesRepository, DashboardRepository, DevicesRepository
 │       ├── domain/       # ComputeStatusUseCase
 │       ├── ui/           # Screens + components (Compose)
 │       └── push/         # CatVacFcmService
@@ -42,10 +44,14 @@ Route → Middleware (auth → validate) → Controller → Service → Model �
 - **Routes**: Express routers, URL mapping only
 - **Controllers**: Parse `req`, call one service method, send response. No business logic.
 - **Services**: All business logic. Accept `ownerId` param on every method. Throw domain errors (`NotFoundError`, `ValidationError`, `UnauthorizedError`). Never import models from other domains.
-- **Middleware**: `auth.middleware.js` verifies JWT from httpOnly cookie, sets `req.userId`. `validate.middleware.js` runs Zod schemas. Error handler is last.
+- **Middleware**: `auth.middleware.js` verifies JWT from httpOnly cookie OR `Authorization: Bearer <token>` header (mobile fallback). Sets `req.userId`. `validate.middleware.js` runs Zod schemas. Error handler is last.
 - **Models**: Mongoose schemas + indexes. No business logic.
 
 ### Every query must include `ownerId: req.userId` — no exception. This is the app's only RLS mechanism.
+
+### Mobile Auth (Bearer Token)
+
+Android cannot use browser cookies, so the auth middleware falls back to `req.headers.authorization?.replace('Bearer ', '')`. Login/signup responses include `{ user, token }` in the body — the Android app stores the JWT in `EncryptedSharedPreferences` and injects it as a Bearer header via an OkHttp interceptor.
 
 ## Key Conventions
 
@@ -88,7 +94,7 @@ cd android && ./gradlew assembleRelease   # Build release APK (signed via key.pr
 adb install -r android/app/build/outputs/apk/debug/app-debug.apk  # Install on device
 
 # Full validation gate (run before every commit/PR)
-npm run lint && npm run typecheck && npm test
+cd server && npm test && cd ../android && ./gradlew assembleDebug
 ```
 
 ## Testing
