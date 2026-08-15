@@ -26,10 +26,11 @@ class ThemeViewModel @Inject constructor(
             when (raw) {
                 "LIGHT" -> ThemeMode.LIGHT
                 "DARK" -> ThemeMode.DARK
-                else -> ThemeMode.LIGHT
+                "SYSTEM" -> ThemeMode.SYSTEM
+                else -> ThemeMode.SYSTEM
             }
         }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, ThemeMode.LIGHT)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, ThemeMode.SYSTEM)
 
     fun setTheme(mode: ThemeMode) {
         viewModelScope.launch {

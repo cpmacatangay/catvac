@@ -1,6 +1,7 @@
 package com.catvac.app.ui.components
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -17,12 +18,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.catvac.app.R
 import com.catvac.app.data.model.CatDto
 import com.catvac.app.data.model.VaccineDto
+import com.catvac.app.data.model.VaccineStatus
+import com.catvac.app.ui.theme.shouldReduceMotion
+import com.catvac.app.util.worstVaccineStatus
 
 @Composable
 fun CatCard(
@@ -34,16 +40,18 @@ fun CatCard(
     val sorted = vaccines.sortedBy { it.dueDate }
     val displayVaccines = sorted.take(5)
     val remaining = sorted.size - 5
+    val worst = worstVaccineStatus(vaccines)
 
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    val reduceMotion = shouldReduceMotion()
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 1.01f else 1f,
-        animationSpec = tween(200),
+        animationSpec = if (reduceMotion) snap() else tween(200),
     )
     val elevation by animateFloatAsState(
         targetValue = if (isPressed) 4.dp.value else 2.dp.value,
-        animationSpec = tween(200),
+        animationSpec = if (reduceMotion) snap() else tween(200),
     )
 
     Card(
@@ -63,7 +71,7 @@ fun CatCard(
                 if (cat.photoUrl != null) {
                     AsyncImage(
                         model = cat.photoUrl,
-                        contentDescription = "${cat.name} avatar",
+                        contentDescription = stringResource(R.string.cat_avatar_description, cat.name),
                         modifier = Modifier.size(48.dp).clip(CircleShape),
                         contentScale = ContentScale.Crop,
                     )
@@ -96,7 +104,7 @@ fun CatCard(
                     )
                     val subtitle = listOfNotNull(cat.breed, cat.sex)
                         .joinToString(" · ")
-                        .ifEmpty { "Cat" }
+                        .ifEmpty { stringResource(R.string.cat_default) }
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodyMedium,
@@ -104,6 +112,9 @@ fun CatCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
+                }
+                if (worst == VaccineStatus.OVERDUE || worst == VaccineStatus.DUE) {
+                    StatusPill(status = worst, modifier = Modifier.padding(start = 8.dp))
                 }
             }
 
@@ -129,7 +140,7 @@ fun CatCard(
 
             if (remaining > 0) {
                 Text(
-                    text = "+$remaining more",
+                    text = stringResource(R.string.card_more, remaining),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp),

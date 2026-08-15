@@ -34,7 +34,6 @@ fun CatVacNavHost(
 
     LaunchedEffect(state.isInitialLoading) {
         if (state.isInitialLoading) return@LaunchedEffect
-        kotlinx.coroutines.delay(3000)
         val dest = if (state.isLoggedIn) "dashboard" else "login"
         if (navController.currentDestination?.route != dest) {
             navController.navigate(dest) {
@@ -92,7 +91,13 @@ fun CatVacNavHost(
                 onLogout = { authViewModel.logout() },
                 themeMode = themeMode,
                 onToggleTheme = {
-                    tv.setTheme(if (themeMode == ThemeMode.DARK) ThemeMode.LIGHT else ThemeMode.DARK)
+                    tv.setTheme(
+                        when (themeMode) {
+                            ThemeMode.LIGHT -> ThemeMode.DARK
+                            ThemeMode.DARK -> ThemeMode.SYSTEM
+                            ThemeMode.SYSTEM -> ThemeMode.LIGHT
+                        }
+                    )
                 },
             )
         }

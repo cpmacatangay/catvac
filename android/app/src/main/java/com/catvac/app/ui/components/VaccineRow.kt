@@ -8,12 +8,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.catvac.app.R
 import com.catvac.app.data.model.VaccineDto
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import com.catvac.app.util.formatDueDate
 
 private sealed interface ConfirmAction {
     data object Administer : ConfirmAction
@@ -24,18 +25,14 @@ private sealed interface ConfirmAction {
 fun VaccineRow(
     vaccine: VaccineDto,
     onAdminister: () -> Unit,
-    onSnooze: () -> Unit,
+    onSnooze: (Int) -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var confirmAction by remember { mutableStateOf<ConfirmAction?>(null) }
-    val dueStr = try {
-        val date = LocalDate.parse(vaccine.dueDate, DateTimeFormatter.ISO_DATE_TIME)
-        date.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))
-    } catch (_: Exception) {
-        vaccine.dueDate.take(10)
-    }
+    var menuExpanded by remember { mutableStateOf(false) }
+    val dueStr = formatDueDate(vaccine.dueDate)
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -64,8 +61,13 @@ fun VaccineRow(
 
             Spacer(Modifier.height(4.dp))
 
+            val dueText = if (vaccine.intervalMonths != null) {
+                stringResource(R.string.vaccine_due_interval, dueStr, vaccine.intervalMonths)
+            } else {
+                stringResource(R.string.vaccine_due_simple, dueStr)
+            }
             Text(
-                text = "Due: $dueStr" + if (vaccine.intervalMonths != null) " · Every ${vaccine.intervalMonths}mo" else "",
+                text = dueText,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -77,39 +79,47 @@ fun VaccineRow(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(
-                    onClick = onEdit,
-                    modifier = Modifier.size(36.dp),
-                ) {
-                    Icon(Icons.Outlined.Edit, "Edit", modifier = Modifier.size(20.dp))
-                }
                 if (!vaccine.administered) {
                     FilledTonalButton(
-                        onClick = { confirmAction = ConfirmAction.Administer },
-                        modifier = Modifier.height(36.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
-                    ) {
-                        Icon(Icons.Outlined.CheckCircle, null, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text("Done", style = MaterialTheme.typography.labelSmall)
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    FilledTonalButton(
                         onClick = { confirmAction = ConfirmAction.Snooze },
-                        modifier = Modifier.height(36.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                        modifier = Modifier.height(48.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
                     ) {
-                        Icon(Icons.Outlined.Refresh, null, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text("Snooze", style = MaterialTheme.typography.labelSmall)
+                        Icon(Icons.Outlined.Refresh, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text(stringResource(R.string.vaccine_snooze), style = MaterialTheme.typography.labelLarge)
                     }
                     Spacer(Modifier.width(8.dp))
+                    Button(
+                        onClick = { confirmAction = ConfirmAction.Administer },
+                        modifier = Modifier.height(48.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+                    ) {
+                        Icon(Icons.Outlined.CheckCircle, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text(stringResource(R.string.vaccine_done), style = MaterialTheme.typography.labelLarge)
+                    }
                 }
                 IconButton(
-                    onClick = onDelete,
-                    modifier = Modifier.size(36.dp),
+                    onClick = { menuExpanded = true },
+                    modifier = Modifier.size(48.dp),
                 ) {
-                    Icon(Icons.Outlined.Delete, "Delete", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Outlined.MoreVert, stringResource(R.string.vaccine_more_actions))
+                }
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false },
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.vaccine_edit)) },
+                        leadingIcon = { Icon(Icons.Outlined.Edit, null) },
+                        onClick = { menuExpanded = false; onEdit() },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.vaccine_delete), color = MaterialTheme.colorScheme.error) },
+                        leadingIcon = { Icon(Icons.Outlined.Delete, null, tint = MaterialTheme.colorScheme.error) },
+                        onClick = { menuExpanded = false; onDelete() },
+                    )
                 }
             }
 
@@ -117,26 +127,38 @@ fun VaccineRow(
                 ConfirmAction.Administer -> {
                     AlertDialog(
                         onDismissRequest = { confirmAction = null },
-                        title = { Text("Mark as administered?") },
-                        text = { Text("${vaccine.name} will be marked as done.${if (vaccine.intervalMonths != null) " A booster will be auto-scheduled." else ""}") },
+                        title = { Text(stringResource(R.string.vaccine_administer_title)) },
+                        text = {
+                            Text(
+                                stringResource(
+                                    R.string.vaccine_administer_body,
+                                    vaccine.name,
+                                    if (vaccine.intervalMonths != null) stringResource(R.string.vaccine_administer_booster) else "",
+                                )
+                            )
+                        },
                         confirmButton = {
-                            Button(onClick = { confirmAction = null; onAdminister() }) { Text("Done") }
+                            Button(onClick = { confirmAction = null; onAdminister() }) { Text(stringResource(R.string.vaccine_done)) }
                         },
                         dismissButton = {
-                            TextButton(onClick = { confirmAction = null }) { Text("Cancel") }
+                            TextButton(onClick = { confirmAction = null }) { Text(stringResource(R.string.action_cancel)) }
                         },
                     )
                 }
                 ConfirmAction.Snooze -> {
                     AlertDialog(
                         onDismissRequest = { confirmAction = null },
-                        title = { Text("Snooze 30 days?") },
-                        text = { Text("${vaccine.name} will be snoozed for 30 days.") },
+                        title = { Text(stringResource(R.string.vaccine_snooze_title, vaccine.name)) },
+                        text = { Text(stringResource(R.string.vaccine_snooze_body)) },
                         confirmButton = {
-                            Button(onClick = { confirmAction = null; onSnooze() }) { Text("Snooze") }
+                            Row {
+                                TextButton(onClick = { confirmAction = null; onSnooze(7) }) { Text(stringResource(R.string.snooze_7_days)) }
+                                TextButton(onClick = { confirmAction = null; onSnooze(30) }) { Text(stringResource(R.string.snooze_30_days)) }
+                                TextButton(onClick = { confirmAction = null; onSnooze(60) }) { Text(stringResource(R.string.snooze_60_days)) }
+                            }
                         },
                         dismissButton = {
-                            TextButton(onClick = { confirmAction = null }) { Text("Cancel") }
+                            TextButton(onClick = { confirmAction = null }) { Text(stringResource(R.string.action_cancel)) }
                         },
                     )
                 }

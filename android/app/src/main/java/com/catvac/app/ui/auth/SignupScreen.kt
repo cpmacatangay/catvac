@@ -9,9 +9,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.catvac.app.R
+import com.catvac.app.ui.components.CatVacLogo
 
 @Composable
 fun SignupScreen(
@@ -42,20 +45,22 @@ fun SignupScreen(
     }
 
     val passwordError = when {
-        password.length < 8 -> "At least 8 characters"
-        !password.any { it.isUpperCase() } -> "One uppercase letter"
-        !password.any { it.isLowerCase() } -> "One lowercase letter"
-        !password.any { it.isDigit() } -> "One number"
+        password.length < 8 -> stringResource(R.string.auth_error_password_short)
+        !password.any { it.isUpperCase() } -> stringResource(R.string.auth_error_password_uppercase)
+        !password.any { it.isLowerCase() } -> stringResource(R.string.auth_error_password_lowercase)
+        !password.any { it.isDigit() } -> stringResource(R.string.auth_error_password_number)
         else -> null
     }
     val confirmError = if (confirmPassword.isNotEmpty() && password != confirmPassword) {
-        "Passwords do not match"
+        stringResource(R.string.auth_error_password_mismatch)
     } else null
 
     var passwordFocused by remember { mutableStateOf(false) }
     var confirmFocused by remember { mutableStateOf(false) }
 
     fun showError(msg: String) { snackbarMsg = msg }
+    val emailRequiredError = stringResource(R.string.auth_error_email_required)
+    val invalidEmailError = stringResource(R.string.auth_error_invalid_email)
 
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
         Column(
@@ -67,15 +72,18 @@ fun SignupScreen(
                 .imePadding(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(Modifier.height(48.dp))
+            Spacer(Modifier.height(40.dp))
+
+            CatVacLogo(modifier = Modifier.size(64.dp))
+            Spacer(Modifier.height(12.dp))
 
             Text(
-                text = "CatVac",
+                text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.displayLarge,
                 color = MaterialTheme.colorScheme.primary,
             )
             Text(
-                text = "Never miss a jab.",
+                text = stringResource(R.string.tagline),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 24.dp),
@@ -87,16 +95,10 @@ fun SignupScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
-                    Text(
-                        text = "Sign Up",
-                        style = MaterialTheme.typography.headlineLarge,
-                        modifier = Modifier.padding(bottom = 16.dp),
-                    )
-
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text("Email") },
+                        label = { Text(stringResource(R.string.auth_email_label)) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         shape = MaterialTheme.shapes.medium,
@@ -106,7 +108,7 @@ fun SignupScreen(
                     PasswordField(
                         value = password,
                         onValueChange = { password = it },
-                        label = "Password",
+                        label = stringResource(R.string.auth_password_label),
                         isError = passwordFocused && password.isNotEmpty() && passwordError != null,
                         supportingText = if (passwordFocused) passwordError?.let { msg ->
                             { Text(msg, color = MaterialTheme.colorScheme.error) }
@@ -119,7 +121,7 @@ fun SignupScreen(
                     PasswordField(
                         value = confirmPassword,
                         onValueChange = { confirmPassword = it },
-                        label = "Confirm Password",
+                        label = stringResource(R.string.auth_confirm_label),
                         isError = confirmFocused && confirmError != null,
                         supportingText = if (confirmFocused) confirmError?.let { msg ->
                             { Text(msg, color = MaterialTheme.colorScheme.error) }
@@ -132,11 +134,11 @@ fun SignupScreen(
                     Button(
                         onClick = {
                             if (email.isBlank()) {
-                                showError("Email is required")
+                                showError(emailRequiredError)
                                 return@Button
                             }
                             if (!email.matches(Regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"))) {
-                                showError("Enter a valid email address")
+                                showError(invalidEmailError)
                                 return@Button
                             }
                             if (passwordError != null) {
@@ -164,7 +166,7 @@ fun SignupScreen(
                                 color = MaterialTheme.colorScheme.onPrimary,
                             )
                         } else {
-                            Text("Sign Up", style = MaterialTheme.typography.bodyLarge)
+                            Text(stringResource(R.string.auth_signup_button), style = MaterialTheme.typography.bodyLarge)
                         }
                     }
                 }
@@ -173,7 +175,7 @@ fun SignupScreen(
             Spacer(Modifier.height(16.dp))
 
             TextButton(onClick = { navController.navigate("login") }) {
-                Text("Already have an account? Log in")
+                Text(stringResource(R.string.auth_signup_login_link))
             }
         }
     }

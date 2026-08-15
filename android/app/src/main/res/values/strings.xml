@@ -1,3 +1,105 @@
 <resources>
     <string name="app_name">CatVac</string>
+    <string name="tagline">Never miss a jab.</string>
+
+    <!-- Auth -->
+    <string name="auth_email_label">Email</string>
+    <string name="auth_password_label">Password</string>
+    <string name="auth_confirm_label">Confirm Password</string>
+    <string name="auth_login_button">Login</string>
+    <string name="auth_signup_button">Sign Up</string>
+    <string name="auth_login_signup_link">Don\'t have an account? Sign up</string>
+    <string name="auth_signup_login_link">Already have an account? Log in</string>
+    <string name="auth_error_required">Email and password are required</string>
+    <string name="auth_error_invalid_email">Enter a valid email address</string>
+    <string name="auth_error_email_required">Email is required</string>
+    <string name="auth_error_password_short">At least 8 characters</string>
+    <string name="auth_error_password_uppercase">One uppercase letter</string>
+    <string name="auth_error_password_lowercase">One lowercase letter</string>
+    <string name="auth_error_password_number">One number</string>
+    <string name="auth_error_password_mismatch">Passwords do not match</string>
+    <string name="password_show">Show password</string>
+    <string name="password_hide">Hide password</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_add_cat">Add cat</string>
+    <string name="dashboard_logout">Log out</string>
+    <string name="theme_current_light">Theme: light</string>
+    <string name="theme_current_dark">Theme: dark</string>
+    <string name="theme_current_system">Theme: system</string>
+    <string name="dashboard_cat_added">Cat added</string>
+    <string name="dashboard_retry">Retry</string>
+    <string name="dashboard_empty_title">No cats yet</string>
+    <string name="dashboard_empty_body">Add your first cat to start tracking vaccines</string>
+    <string name="dashboard_empty_cta">Add Cat</string>
+    <string name="dashboard_summary_overdue">%1$d overdue</string>
+    <string name="dashboard_summary_due">%1$d due</string>
+    <string name="dashboard_summary_all_clear">All protected</string>
+    <string name="logout_title">Log out?</string>
+    <string name="logout_body">Are you sure you want to log out?</string>
+
+    <!-- Cat form -->
+    <string name="cat_name_label">Name *</string>
+    <string name="cat_breed_label">Breed</string>
+    <string name="cat_sex_label">Sex</string>
+    <string name="cat_notes_label">Notes</string>
+    <string name="sex_not_set">Not set</string>
+    <string name="sex_male">Male</string>
+    <string name="sex_female">Female</string>
+    <string name="add_cat_title">Add Cat</string>
+    <string name="edit_cat_title">Edit Cat</string>
+    <string name="cat_default">Cat</string>
+
+    <!-- Vaccines -->
+    <string name="detail_vaccines">Vaccines</string>
+    <string name="detail_empty_vaccines">No vaccines yet</string>
+    <string name="detail_empty_vaccines_body">Add the first dose to start tracking reminders.</string>
+    <string name="detail_add_vaccine">Add Vaccine</string>
+    <string name="add_vaccine_title">Add Vaccine</string>
+    <string name="edit_vaccine_title">Edit Vaccine</string>
+    <string name="vaccine_name_label">Vaccine Name</string>
+    <string name="vaccine_due_date_label">Due Date</string>
+    <string name="vaccine_pick_date">Pick date</string>
+    <string name="vaccine_interval_label">Interval (months)</string>
+    <string name="vaccine_interval_optional">Optional</string>
+    <string name="vaccine_interval_hint">Optional — how often this repeats</string>
+    <string name="vaccine_notes_label">Notes (optional)</string>
+    <string name="vaccine_due_simple">Due: %1$s</string>
+    <string name="vaccine_due_interval">Due: %1$s · Every %2$dmo</string>
+    <string name="vaccine_more_actions">More actions</string>
+    <string name="vaccine_done">Done</string>
+    <string name="vaccine_snooze">Snooze</string>
+    <string name="vaccine_edit">Edit</string>
+    <string name="vaccine_delete">Delete</string>
+    <string name="vaccine_administer_title">Mark as administered?</string>
+    <string name="vaccine_administer_body">%1$s will be marked as done.%2$s</string>
+    <string name="vaccine_administer_booster"> A booster will be auto-scheduled.</string>
+    <string name="vaccine_snooze_title">Snooze %1$s?</string>
+    <string name="vaccine_snooze_body">Hide this reminder for a while. You\'ll be reminded again when it\'s next due.</string>
+    <string name="snooze_7_days">7 days</string>
+    <string name="snooze_30_days">30 days</string>
+    <string name="snooze_60_days">60 days</string>
+    <string name="delete_vaccine_title">Delete Vaccine?</string>
+    <string name="delete_vaccine_body">This cannot be undone.</string>
+    <string name="delete_cat_title">Delete Cat?</string>
+    <string name="delete_cat_body">Remove %1$s and all associated vaccines? This cannot be undone.</string>
+
+    <!-- Actions -->
+    <string name="action_back">Back</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_add">Add</string>
+    <string name="action_save">Save</string>
+    <string name="action_ok">OK</string>
+    <string name="cat_avatar_description">%1$s avatar</string>
+
+    <!-- Status -->
+    <string name="status_on_track">On track</string>
+    <string name="status_upcoming">Upcoming</string>
+    <string name="status_due">Due</string>
+    <string name="status_overdue">Overdue</string>
+    <string name="status_done">Done</string>
+    <string name="status_snoozed">Snoozed</string>
+    <string name="status_pending">Pending</string>
+    <string name="status_description">Status: %1$s</string>
+    <string name="card_more">+%1$d more</string>
 </resources>

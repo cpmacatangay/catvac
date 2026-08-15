@@ -3,6 +3,8 @@ package com.catvac.app.ui.catdetail
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -18,28 +20,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.catvac.app.R
 import com.catvac.app.ui.components.VaccineRow
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import com.catvac.app.ui.components.VaccineRowSkeleton
-import com.catvac.app.ui.components.DetailSkeleton
 import com.catvac.app.ui.components.ShimmerBox
-
-private fun formatDueDateForDisplay(dueDate: String): String {
-    if (dueDate.isBlank()) return ""
-    return try {
-        LocalDate.parse(dueDate, DateTimeFormatter.ISO_DATE_TIME)
-            .format(DateTimeFormatter.ofPattern("MMM d, yyyy"))
-    } catch (_: Exception) {
-        dueDate.take(10)
-    }
-}
+import com.catvac.app.util.formatDueDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,13 +61,13 @@ fun CatDetailScreen(
         topBar = {
             val title = when (val s = state) {
                 is CatDetailUiState.Success -> s.cat.name
-                else -> "Cat"
+                else -> stringResource(R.string.cat_default)
             }
             TopAppBar(
                 title = { Text(title) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.action_back))
                     }
                 },
             )
@@ -112,7 +105,7 @@ fun CatDetailScreen(
                         Text(s.message)
                         Spacer(Modifier.height(16.dp))
                         Button(onClick = { viewModel.load(catId) }) {
-                            Text("Retry")
+                            Text(stringResource(R.string.dashboard_retry))
                         }
                     }
                 }
@@ -144,84 +137,99 @@ private fun CatDetailContent(
     var deleteVaxId by remember { mutableStateOf<String?>(null) }
     var editVaxId by remember { mutableStateOf<String?>(null) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
     ) {
-        // Header
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
-        ) {
-            val avatarInitial = cat.name.first().uppercase()
-            if (cat.photoUrl != null) {
-                AsyncImage(
-                    model = cat.photoUrl,
-                    contentDescription = "${cat.name} avatar",
-                    modifier = Modifier.size(56.dp).clip(CircleShape),
-                    contentScale = ContentScale.Crop,
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = avatarInitial,
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
+        item {
+            // Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+            ) {
+                val avatarInitial = cat.name.first().uppercase()
+                if (cat.photoUrl != null) {
+                    AsyncImage(
+                        model = cat.photoUrl,
+                        contentDescription = stringResource(R.string.cat_avatar_description, cat.name),
+                        modifier = Modifier.size(56.dp).clip(CircleShape),
+                        contentScale = ContentScale.Crop,
                     )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = avatarInitial,
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
                 }
-            }
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
-                Text(
-                    cat.name,
-                    style = MaterialTheme.typography.headlineMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                val subtitle = listOfNotNull(cat.breed, cat.sex)
-                    .joinToString(" · ")
-                    .ifEmpty { "Cat" }
-                    Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            Row {
-                IconButton(onClick = { showEdit = true }) {
-                    Icon(Icons.Outlined.Edit, "Edit")
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        cat.name,
+                        style = MaterialTheme.typography.headlineMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    val subtitle = listOfNotNull(cat.breed, cat.sex)
+                        .joinToString(" · ")
+                        .ifEmpty { stringResource(R.string.cat_default) }
+                        Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                IconButton(onClick = { showDeleteConfirm = true }) {
-                    Icon(Icons.Outlined.Delete, "Delete", tint = MaterialTheme.colorScheme.error)
+                Row {
+                    IconButton(onClick = { showEdit = true }) {
+                        Icon(Icons.Outlined.Edit, stringResource(R.string.vaccine_edit))
+                    }
+                    IconButton(onClick = { showDeleteConfirm = true }) {
+                        Icon(Icons.Outlined.Delete, stringResource(R.string.vaccine_delete), tint = MaterialTheme.colorScheme.error)
+                    }
                 }
             }
         }
 
-        // Vaccines
-        Text(
-            "Vaccines",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(bottom = 12.dp),
-        )
+        item {
+            // Vaccines
+            Text(
+                stringResource(R.string.detail_vaccines),
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(bottom = 12.dp),
+            )
+        }
 
         if (vaccines.isEmpty()) {
-            Text(
-                "No vaccines yet",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(vertical = 24.dp).fillMaxWidth(),
-            )
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        stringResource(R.string.detail_empty_vaccines),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        stringResource(R.string.detail_empty_vaccines_body),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
         } else {
-            vaccines.forEach { vax ->
+            items(vaccines, key = { it.id }) { vax ->
                 VaccineRow(
                     vaccine = vax,
                     onAdminister = { viewModel.administerVaccine(vax.id, catId) },
-                    onSnooze = { viewModel.snoozeVaccine(vax.id, catId) },
+                    onSnooze = { days -> viewModel.snoozeVaccine(vax.id, catId, days) },
                     onEdit = { editVaxId = vax.id },
                     onDelete = { deleteVaxId = vax.id },
                     modifier = Modifier.padding(bottom = 8.dp),
@@ -229,15 +237,16 @@ private fun CatDetailContent(
             }
         }
 
-        Spacer(Modifier.height(16.dp))
-
-        OutlinedButton(
-            onClick = { showAddVax = true },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Icon(Icons.Outlined.Add, null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(4.dp))
-            Text("Add Vaccine")
+        item {
+            Spacer(Modifier.height(16.dp))
+            OutlinedButton(
+                onClick = { showAddVax = true },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(Icons.Outlined.Add, null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(4.dp))
+                Text(stringResource(R.string.detail_add_vaccine))
+            }
         }
     }
 
@@ -258,9 +267,9 @@ private fun CatDetailContent(
     if (showDeleteConfirm) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
-            title = { Text("Delete Cat?") },
+            title = { Text(stringResource(R.string.delete_cat_title)) },
             text = {
-                Text("Remove ${cat.name} and all associated vaccines? This cannot be undone.")
+                Text(stringResource(R.string.delete_cat_body, cat.name))
             },
             confirmButton = {
                 Button(
@@ -273,10 +282,10 @@ private fun CatDetailContent(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error,
                     ),
-                ) { Text("Delete") }
+                ) { Text(stringResource(R.string.vaccine_delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteConfirm = false }) { Text("Cancel") }
+                TextButton(onClick = { showDeleteConfirm = false }) { Text(stringResource(R.string.action_cancel)) }
             },
         )
     }
@@ -311,8 +320,8 @@ private fun CatDetailContent(
     deleteVaxId?.let { vaxId ->
         AlertDialog(
             onDismissRequest = { deleteVaxId = null },
-            title = { Text("Delete Vaccine?") },
-            text = { Text("This cannot be undone.") },
+            title = { Text(stringResource(R.string.delete_vaccine_title)) },
+            text = { Text(stringResource(R.string.delete_vaccine_body)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -322,10 +331,10 @@ private fun CatDetailContent(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error,
                     ),
-                ) { Text("Delete") }
+                ) { Text(stringResource(R.string.vaccine_delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { deleteVaxId = null }) { Text("Cancel") }
+                TextButton(onClick = { deleteVaxId = null }) { Text(stringResource(R.string.action_cancel)) }
             },
         )
     }
@@ -356,17 +365,17 @@ private fun EditCatDialog(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text("Edit Cat", style = MaterialTheme.typography.headlineMedium)
+            Text(stringResource(R.string.edit_cat_title), style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(4.dp))
             OutlinedTextField(
                 value = name, onValueChange = { name = it },
-                label = { Text("Name *") }, singleLine = true,
+                label = { Text(stringResource(R.string.cat_name_label)) }, singleLine = true,
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             OutlinedTextField(
                 value = breed, onValueChange = { breed = it },
-                label = { Text("Breed") }, singleLine = true,
+                label = { Text(stringResource(R.string.cat_breed_label)) }, singleLine = true,
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -375,10 +384,14 @@ private fun EditCatDialog(
                 onExpandedChange = { expanded = it },
             ) {
                 OutlinedTextField(
-                    value = when (sex) { "M" -> "Male"; "F" -> "Female"; else -> "" },
+                    value = when (sex) {
+                        "M" -> stringResource(R.string.sex_male)
+                        "F" -> stringResource(R.string.sex_female)
+                        else -> ""
+                    },
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Sex") },
+                    label = { Text(stringResource(R.string.cat_sex_label)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
                     shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable),
@@ -387,23 +400,23 @@ private fun EditCatDialog(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
                 ) {
-                    DropdownMenuItem(text = { Text("—") }, onClick = { sex = ""; expanded = false })
-                    DropdownMenuItem(text = { Text("Male") }, onClick = { sex = "M"; expanded = false })
-                    DropdownMenuItem(text = { Text("Female") }, onClick = { sex = "F"; expanded = false })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.sex_not_set)) }, onClick = { sex = ""; expanded = false })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.sex_male)) }, onClick = { sex = "M"; expanded = false })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.sex_female)) }, onClick = { sex = "F"; expanded = false })
                 }
             }
             OutlinedTextField(
                 value = notes, onValueChange = { notes = it },
-                label = { Text("Notes") }, maxLines = 3,
+                label = { Text(stringResource(R.string.cat_notes_label)) }, maxLines = 3,
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(8.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onDismiss) { Text("Cancel") }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
                 Spacer(Modifier.width(8.dp))
                 Button(onClick = { if (name.isNotBlank()) onSubmit(name, breed, sex, notes) },
-                    enabled = name.isNotBlank()) { Text("Save") }
+                    enabled = name.isNotBlank()) { Text(stringResource(R.string.action_save)) }
             }
             Spacer(Modifier.height(16.dp))
         }
@@ -435,23 +448,23 @@ private fun EditVaccineDialog(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text("Edit Vaccine", style = MaterialTheme.typography.headlineMedium)
+            Text(stringResource(R.string.edit_vaccine_title), style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(4.dp))
             OutlinedTextField(
                 value = name, onValueChange = { name = it },
-                label = { Text("Vaccine Name") }, singleLine = true,
+                label = { Text(stringResource(R.string.vaccine_name_label)) }, singleLine = true,
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             Box {
                 OutlinedTextField(
-                    value = formatDueDateForDisplay(dueDate),
+                    value = formatDueDate(dueDate),
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Due Date") },
+                    label = { Text(stringResource(R.string.vaccine_due_date_label)) },
                     singleLine = true,
                     shape = MaterialTheme.shapes.medium,
-                    trailingIcon = { Icon(Icons.Outlined.CalendarMonth, "Pick date") },
+                    trailingIcon = { Icon(Icons.Outlined.CalendarMonth, stringResource(R.string.vaccine_pick_date)) },
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Box(
@@ -462,21 +475,21 @@ private fun EditVaccineDialog(
             }
             OutlinedTextField(
                 value = intervalMonths, onValueChange = { intervalMonths = it },
-                label = { Text("Interval (months)") }, singleLine = true,
+                label = { Text(stringResource(R.string.vaccine_interval_label)) }, singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                supportingText = { Text("Optional", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                supportingText = { Text(stringResource(R.string.vaccine_interval_optional), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             OutlinedTextField(
                 value = notes, onValueChange = { notes = it },
-                label = { Text("Notes (optional)") }, maxLines = 3,
+                label = { Text(stringResource(R.string.vaccine_notes_label)) }, maxLines = 3,
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(8.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onDismiss) { Text("Cancel") }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
                 Spacer(Modifier.width(8.dp))
                 Button(
                     onClick = {
@@ -485,7 +498,7 @@ private fun EditVaccineDialog(
                         }
                     },
                     enabled = name.isNotBlank() && dueDate.isNotBlank(),
-                ) { Text("Save") }
+                ) { Text(stringResource(R.string.action_save)) }
             }
             Spacer(Modifier.height(16.dp))
         }
@@ -504,12 +517,12 @@ private fun EditVaccineDialog(
                     }
                     showDatePicker = false
                 }) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
         ) {
@@ -539,23 +552,23 @@ private fun AddVaccineDialog(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text("Add Vaccine", style = MaterialTheme.typography.headlineMedium)
+            Text(stringResource(R.string.add_vaccine_title), style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(4.dp))
             OutlinedTextField(
                 value = name, onValueChange = { name = it },
-                label = { Text("Vaccine Name") }, singleLine = true,
+                label = { Text(stringResource(R.string.vaccine_name_label)) }, singleLine = true,
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             Box {
                 OutlinedTextField(
-                    value = formatDueDateForDisplay(dueDate),
+                    value = formatDueDate(dueDate),
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Due Date") },
+                    label = { Text(stringResource(R.string.vaccine_due_date_label)) },
                     singleLine = true,
                     shape = MaterialTheme.shapes.medium,
-                    trailingIcon = { Icon(Icons.Outlined.CalendarMonth, "Pick date") },
+                    trailingIcon = { Icon(Icons.Outlined.CalendarMonth, stringResource(R.string.vaccine_pick_date)) },
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Box(
@@ -566,21 +579,21 @@ private fun AddVaccineDialog(
             }
             OutlinedTextField(
                 value = intervalMonths, onValueChange = { intervalMonths = it },
-                label = { Text("Interval (months)") }, singleLine = true,
+                label = { Text(stringResource(R.string.vaccine_interval_label)) }, singleLine = true,
                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
-                supportingText = { Text("Optional — how often this repeats", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                supportingText = { Text(stringResource(R.string.vaccine_interval_hint), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             OutlinedTextField(
                 value = notes, onValueChange = { notes = it },
-                label = { Text("Notes (optional)") }, maxLines = 3,
+                label = { Text(stringResource(R.string.vaccine_notes_label)) }, maxLines = 3,
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(8.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onDismiss) { Text("Cancel") }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
                 Spacer(Modifier.width(8.dp))
                 Button(
                     onClick = {
@@ -589,7 +602,7 @@ private fun AddVaccineDialog(
                         }
                     },
                     enabled = name.isNotBlank() && dueDate.isNotBlank(),
-                ) { Text("Add") }
+                ) { Text(stringResource(R.string.action_add)) }
             }
             Spacer(Modifier.height(16.dp))
         }
@@ -608,12 +621,12 @@ private fun AddVaccineDialog(
                     }
                     showDatePicker = false
                 }) {
-                    Text("OK")
+                    Text(stringResource(R.string.action_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.action_cancel))
                 }
             },
         ) {

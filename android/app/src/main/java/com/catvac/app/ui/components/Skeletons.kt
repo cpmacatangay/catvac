@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import com.catvac.app.ui.theme.shouldReduceMotion
 
 @Composable
 private fun ShimmerAlpha(): Float {
@@ -39,7 +40,7 @@ internal fun ShimmerBox(
     height: Int = 16,
     shape: androidx.compose.ui.graphics.Shape = RoundedCornerShape(4.dp),
 ) {
-    val alpha = ShimmerAlpha()
+    val alpha = if (shouldReduceMotion()) 0.45f else ShimmerAlpha()
     val color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha * 0.12f)
     Box(
         modifier = Modifier
@@ -100,26 +101,3 @@ fun VaccineRowSkeleton() {
     }
 }
 
-@Composable
-fun DetailSkeleton() {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            ShimmerBox(width = 56, height = 56, shape = CircleShape)
-            Spacer(Modifier.width(12.dp))
-            Column {
-                ShimmerBox(height = 22, width = 160)
-                Spacer(Modifier.height(6.dp))
-                ShimmerBox(height = 14, width = 100)
-            }
-        }
-        Spacer(Modifier.height(32.dp))
-        ShimmerBox(height = 22, width = 100)
-        Spacer(Modifier.height(12.dp))
-        repeat(3) {
-            ShimmerBox(height = 60)
-            Spacer(Modifier.height(8.dp))
-        }
-    }
-}

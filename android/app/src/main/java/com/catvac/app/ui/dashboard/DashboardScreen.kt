@@ -1,7 +1,9 @@
 package com.catvac.app.ui.dashboard
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
@@ -9,20 +11,29 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.BrightnessAuto
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.catvac.app.R
 import com.catvac.app.data.model.DashboardItem
+import com.catvac.app.data.model.VaccineStatus
 import com.catvac.app.ui.components.CatCard
 import com.catvac.app.ui.components.CatCardSkeleton
-import com.catvac.app.ui.components.StatusPill
+import com.catvac.app.ui.components.CatVacLogo
 import com.catvac.app.ui.theme.ThemeMode
+import com.catvac.app.util.urgencyRank
+import com.catvac.app.util.worstVaccineStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,12 +50,13 @@ fun DashboardScreen(
     var showAddCat by remember { mutableStateOf(false) }
     var showLogoutConfirm by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
+    val catAddedText = stringResource(R.string.dashboard_cat_added)
 
     LaunchedEffect(addCatState) {
         when (addCatState) {
             is AddCatState.Success -> {
                 showAddCat = false
-                snackbarHostState.showSnackbar("Cat added")
+                snackbarHostState.showSnackbar(catAddedText)
                 viewModel.resetAddCatState()
             }
             is AddCatState.Error -> {
@@ -59,19 +71,29 @@ fun DashboardScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("CatVac", style = MaterialTheme.typography.headlineMedium) },
+                title = { Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium) },
                 actions = {
                     IconButton(onClick = onToggleTheme) {
                         Icon(
-                            imageVector = if (themeMode == ThemeMode.DARK) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
-                            contentDescription = if (themeMode == ThemeMode.DARK) "Switch to light" else "Switch to dark",
+                            imageVector = when (themeMode) {
+                                ThemeMode.LIGHT -> Icons.Outlined.LightMode
+                                ThemeMode.DARK -> Icons.Outlined.DarkMode
+                                ThemeMode.SYSTEM -> Icons.Outlined.BrightnessAuto
+                            },
+                            contentDescription = stringResource(
+                                when (themeMode) {
+                                    ThemeMode.LIGHT -> R.string.theme_current_light
+                                    ThemeMode.DARK -> R.string.theme_current_dark
+                                    ThemeMode.SYSTEM -> R.string.theme_current_system
+                                }
+                            ),
                         )
                     }
                     IconButton(onClick = { showAddCat = true }) {
-                        Icon(Icons.Outlined.Add, "Add cat")
+                        Icon(Icons.Outlined.Add, stringResource(R.string.dashboard_add_cat))
                     }
                     TextButton(onClick = { showLogoutConfirm = true }) {
-                        Text("Log out")
+                        Text(stringResource(R.string.dashboard_logout))
                     }
                 },
             )
@@ -107,7 +129,7 @@ fun DashboardScreen(
                         Text(s.message, style = MaterialTheme.typography.bodyLarge)
                         Spacer(Modifier.height(16.dp))
                         Button(onClick = { viewModel.loadDashboard() }) {
-                            Text("Retry")
+                            Text(stringResource(R.string.dashboard_retry))
                         }
                     }
                 }
@@ -115,13 +137,21 @@ fun DashboardScreen(
                     if (s.items.isEmpty()) {
                         EmptyDashboard(onAddCat = { showAddCat = true })
                     } else {
+                        val sortedItems = remember(s.items) {
+                            s.items.sortedByDescending { worstVaccineStatus(it.vaccines).urgencyRank() }
+                        }
+                        val overdue = s.items.sumOf { item -> item.vaccines.count { it.status == VaccineStatus.OVERDUE } }
+                        val due = s.items.sumOf { item -> item.vaccines.count { it.status == VaccineStatus.DUE } }
                         LazyVerticalGrid(
                             columns = GridCells.Adaptive(minSize = 320.dp),
                             contentPadding = PaddingValues(16.dp),
                             horizontalArrangement = Arrangement.spacedBy(20.dp),
                             verticalArrangement = Arrangement.spacedBy(20.dp),
                         ) {
-                            items(s.items, key = { it.cat.id }) { item ->
+                            item(span = { GridItemSpan(maxLineSpan) }) {
+                                DashboardSummary(overdue = overdue, due = due)
+                            }
+                            items(sortedItems, key = { it.cat.id }) { item ->
                                 CatCard(
                                     cat = item.cat,
                                     vaccines = item.vaccines,
@@ -149,14 +179,45 @@ fun DashboardScreen(
     if (showLogoutConfirm) {
         AlertDialog(
             onDismissRequest = { showLogoutConfirm = false },
-            title = { Text("Log out?") },
-            text = { Text("Are you sure you want to log out?") },
+            title = { Text(stringResource(R.string.logout_title)) },
+            text = { Text(stringResource(R.string.logout_body)) },
             confirmButton = {
-                Button(onClick = { showLogoutConfirm = false; onLogout() }) { Text("Log out") }
+                Button(onClick = { showLogoutConfirm = false; onLogout() }) { Text(stringResource(R.string.dashboard_logout)) }
             },
             dismissButton = {
-                TextButton(onClick = { showLogoutConfirm = false }) { Text("Cancel") }
+                TextButton(onClick = { showLogoutConfirm = false }) { Text(stringResource(R.string.action_cancel)) }
             },
+        )
+    }
+}
+
+@Composable
+private fun DashboardSummary(overdue: Int, due: Int) {
+    val urgent = overdue > 0 || due > 0
+    val overdueText = stringResource(R.string.dashboard_summary_overdue, overdue)
+    val dueText = stringResource(R.string.dashboard_summary_due, due)
+    val allClearText = stringResource(R.string.dashboard_summary_all_clear)
+    val text = when {
+        overdue > 0 && due > 0 -> "$overdueText · $dueText"
+        overdue > 0 -> overdueText
+        due > 0 -> dueText
+        else -> allClearText
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = if (urgent) Icons.Outlined.Notifications else Icons.Outlined.CheckCircle,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+            tint = if (overdue > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -168,14 +229,24 @@ private fun EmptyDashboard(onAddCat: () -> Unit) {
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(
+                modifier = Modifier
+                    .size(96.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center,
+            ) {
+                CatVacLogo(modifier = Modifier.size(56.dp))
+            }
+            Spacer(Modifier.height(20.dp))
             Text(
-                "No cats yet",
+                stringResource(R.string.dashboard_empty_title),
                 style = MaterialTheme.typography.headlineMedium,
-                color =                         MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "Add your first cat to start tracking vaccines",
+                stringResource(R.string.dashboard_empty_body),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -183,7 +254,7 @@ private fun EmptyDashboard(onAddCat: () -> Unit) {
             Button(onClick = onAddCat) {
                 Icon(Icons.Outlined.Add, null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(4.dp))
-                Text("Add Cat")
+                Text(stringResource(R.string.dashboard_empty_cta))
             }
         }
     }
@@ -213,13 +284,13 @@ private fun AddCatDialog(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text("Add Cat", style = MaterialTheme.typography.headlineMedium)
+            Text(stringResource(R.string.add_cat_title), style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(4.dp))
 
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Name *") },
+                label = { Text(stringResource(R.string.cat_name_label)) },
                 singleLine = true,
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
@@ -227,7 +298,7 @@ private fun AddCatDialog(
             OutlinedTextField(
                 value = breed,
                 onValueChange = { breed = it },
-                label = { Text("Breed") },
+                label = { Text(stringResource(R.string.cat_breed_label)) },
                 singleLine = true,
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
@@ -235,13 +306,17 @@ private fun AddCatDialog(
             var expanded by remember { mutableStateOf(false) }
             ExposedDropdownMenuBox(
                 expanded = expanded,
-                onExpandedChange = { expanded = !expanded },
+                onExpandedChange = { expanded = it },
             ) {
                 OutlinedTextField(
-                    value = when (sex) { "M" -> "Male"; "F" -> "Female"; else -> "" },
+                    value = when (sex) {
+                        "M" -> stringResource(R.string.sex_male)
+                        "F" -> stringResource(R.string.sex_female)
+                        else -> ""
+                    },
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Sex") },
+                    label = { Text(stringResource(R.string.cat_sex_label)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
                     shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable),
@@ -250,15 +325,15 @@ private fun AddCatDialog(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
                 ) {
-                    DropdownMenuItem(text = { Text("—") }, onClick = { sex = ""; expanded = false })
-                    DropdownMenuItem(text = { Text("Male") }, onClick = { sex = "M"; expanded = false })
-                    DropdownMenuItem(text = { Text("Female") }, onClick = { sex = "F"; expanded = false })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.sex_not_set)) }, onClick = { sex = ""; expanded = false })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.sex_male)) }, onClick = { sex = "M"; expanded = false })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.sex_female)) }, onClick = { sex = "F"; expanded = false })
                 }
             }
             OutlinedTextField(
                 value = notes,
                 onValueChange = { notes = it },
-                label = { Text("Notes") },
+                label = { Text(stringResource(R.string.cat_notes_label)) },
                 maxLines = 3,
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
@@ -266,7 +341,7 @@ private fun AddCatDialog(
 
             Spacer(Modifier.height(8.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onDismiss, enabled = !isSubmitting) { Text("Cancel") }
+                TextButton(onClick = onDismiss, enabled = !isSubmitting) { Text(stringResource(R.string.action_cancel)) }
                 Spacer(Modifier.width(8.dp))
                 Button(
                     onClick = { if (name.isNotBlank()) onSubmit(name, breed, sex, notes) },
@@ -275,7 +350,7 @@ private fun AddCatDialog(
                     if (isSubmitting) {
                         CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                     } else {
-                        Text("Add")
+                        Text(stringResource(R.string.action_add))
                     }
                 }
             }

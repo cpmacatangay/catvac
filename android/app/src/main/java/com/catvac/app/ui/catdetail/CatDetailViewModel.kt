@@ -157,9 +157,15 @@ class CatDetailViewModel @Inject constructor(
     fun administerVaccine(vaccineId: String, catId: String) {
         viewModelScope.launch {
             mutex.withLock {
+                val name = vaccineName(vaccineId)
+                val catName = catName()
                 vaccinesRepository.administer(vaccineId, AdministerRequest())
                     .onSuccess {
-                        _snackbar.value = "Vaccine marked administered"
+                        _snackbar.value = when {
+                            name != null && catName != null -> "$name done — $catName's protected."
+                            name != null -> "$name marked administered"
+                            else -> "Vaccine marked administered"
+                        }
                         load(catId)
                     }
                     .onFailure { e ->
@@ -172,9 +178,10 @@ class CatDetailViewModel @Inject constructor(
     fun snoozeVaccine(vaccineId: String, catId: String, days: Int = 30) {
         viewModelScope.launch {
             mutex.withLock {
+                val name = vaccineName(vaccineId)
                 vaccinesRepository.snooze(vaccineId, days)
                     .onSuccess {
-                        _snackbar.value = "Vaccine snoozed $days days"
+                        _snackbar.value = if (name != null) "$name snoozed for $days days" else "Vaccine snoozed for $days days"
                         load(catId)
                     }
                     .onFailure { e ->
@@ -202,4 +209,11 @@ class CatDetailViewModel @Inject constructor(
     fun clearSnackbar() {
         _snackbar.value = null
     }
+
+    private fun vaccineName(vaccineId: String): String? =
+        (_state.value as? CatDetailUiState.Success)
+            ?.vaccines?.firstOrNull { it.id == vaccineId }?.name
+
+    private fun catName(): String? =
+        (_state.value as? CatDetailUiState.Success)?.cat?.name
 }

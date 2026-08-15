@@ -11,8 +11,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.catvac.app.R
 import com.catvac.app.ui.components.CatVacLogo
 
 @Composable
@@ -40,13 +42,13 @@ fun SplashScreen() {
         Spacer(Modifier.height(24.dp))
 
         Text(
-            text = "CatVac",
+            text = stringResource(R.string.app_name),
             style = MaterialTheme.typography.displayLarge,
             color = MaterialTheme.colorScheme.primary,
         )
 
         Text(
-            text = "Never miss a jab.",
+            text = stringResource(R.string.tagline),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

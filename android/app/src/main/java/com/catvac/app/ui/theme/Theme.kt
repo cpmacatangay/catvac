@@ -7,7 +7,11 @@ import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
+
+val LocalDarkTheme = staticCompositionLocalOf { false }
 
 val CatVacShapes = Shapes(
     extraSmall = RoundedCornerShape(4.dp),
@@ -64,10 +68,12 @@ fun CatVacTheme(
 
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = CatVacTypography,
-        shapes = CatVacShapes,
-        content = content,
-    )
+    CompositionLocalProvider(LocalDarkTheme provides darkTheme) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = CatVacTypography,
+            shapes = CatVacShapes,
+            content = content,
+        )
+    }
 }
