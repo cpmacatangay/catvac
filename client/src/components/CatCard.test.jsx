@@ -10,7 +10,7 @@ describe('CatCard', () => {
   it('renders cat name and breed', () => {
     render(<CatCard cat={makeCat()} vaccines={[]} onClick={vi.fn()} />)
     expect(screen.getByText('Milo')).toBeInTheDocument()
-    expect(screen.getByText('Siamese · M')).toBeInTheDocument()
+    expect(screen.getByText('Siamese · Male')).toBeInTheDocument()
   })
 
   it('shows Cat fallback when no breed or sex', () => {

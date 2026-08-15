@@ -8,6 +8,7 @@ import { Input } from './Input.jsx'
 import { ConfirmDialog } from './ConfirmDialog.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { useAdministerVaccine, useSnoozeVaccine, useUpdateVaccine, useDeleteVaccine } from '../hooks/useVaccines.js'
+import { formatDate } from '../lib/format.js'
 
 export function VaccineRow({ vaccine }) {
   const administer = useAdministerVaccine()
@@ -17,6 +18,7 @@ export function VaccineRow({ vaccine }) {
   const { addToast } = useToast()
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [confirmAdminister, setConfirmAdminister] = useState(false)
+  const [showSnooze, setShowSnooze] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
   const [editName, setEditName] = useState(vaccine.name)
   const [editDueDate, setEditDueDate] = useState(vaccine.dueDate.split('T')[0])
@@ -41,16 +43,26 @@ export function VaccineRow({ vaccine }) {
   }
 
   function parseEditInt(v) {
-  if (v === '' || v === null || v === undefined) return null
-  const n = parseInt(v, 10)
-  return Number.isNaN(n) || n <= 0 ? null : n
-}
+    if (v === '' || v === null || v === undefined) return null
+    const n = parseInt(v, 10)
+    return Number.isNaN(n) || n <= 0 ? null : n
+  }
 
-function openEdit() {
+  function openEdit() {
     setEditName(vaccine.name)
     setEditDueDate(vaccine.dueDate.split('T')[0])
     setEditInterval(vaccine.intervalMonths?.toString() ?? '')
     setShowEdit(true)
+  }
+
+  async function handleSnooze(days) {
+    setShowSnooze(false)
+    try {
+      await snooze.mutateAsync({ id: vaccine._id, catId: vaccine.catId, days })
+      addToast(`${vaccine.name} snoozed ${days} days`, 'success')
+    } catch (err) {
+      addToast(err.message, 'error')
+    }
   }
 
   return (
@@ -91,16 +103,9 @@ function openEdit() {
               variant="icon"
               tone="warning"
               disabled={snooze.isPending}
-              onClick={async () => {
-                try {
-                  await snooze.mutateAsync({ id: vaccine._id, catId: vaccine.catId, days: 30 })
-                  addToast(`${vaccine.name} snoozed 30 days`, 'success')
-                } catch (err) {
-                  addToast(err.message, 'error')
-                }
-              }}
-              title="Snooze 30 days"
-              aria-label="Snooze 30 days"
+              onClick={() => setShowSnooze(true)}
+              title="Snooze"
+              aria-label="Snooze"
             >
               <ArrowPathIcon className="h-6 w-6" aria-hidden />
             </Button>
@@ -136,6 +141,17 @@ function openEdit() {
         </form>
       </Modal>
 
+      <Modal open={showSnooze} onClose={() => setShowSnooze(false)} title={`Snooze ${vaccine.name}`}>
+        <p className="text-body-sm text-gray-600">
+          Hide this reminder for a while. You&apos;ll be reminded again when it&apos;s next due.
+        </p>
+        <div className="flex flex-col gap-2 pt-2">
+          <Button variant="secondary" onClick={() => handleSnooze(7)}>7 days</Button>
+          <Button variant="secondary" onClick={() => handleSnooze(30)}>30 days</Button>
+          <Button variant="secondary" onClick={() => handleSnooze(60)}>60 days</Button>
+        </div>
+      </Modal>
+
       <ConfirmDialog
         open={confirmAdminister}
         title={`Mark ${vaccine.name} administered?`}
@@ -145,8 +161,12 @@ function openEdit() {
         onConfirm={async () => {
           setConfirmAdminister(false)
           try {
-            await administer.mutateAsync({ id: vaccine._id, catId: vaccine.catId })
-            addToast(`${vaccine.name} marked administered`, 'success')
+            const result = await administer.mutateAsync({ id: vaccine._id, catId: vaccine.catId })
+            const next = result?.nextBooster?.dueDate
+            addToast(
+              next ? `${vaccine.name} done — next due ${formatDate(next)}` : `${vaccine.name} marked administered`,
+              'success',
+            )
           } catch (err) {
             addToast(err.message, 'error')
           }

@@ -30,22 +30,3 @@ export function VaccineRowSkeleton() {
     </div>
   )
 }
-
-export function DetailSkeleton() {
-  return (
-    <div className="max-w-3xl mx-auto px-4 md:px-6 py-8 space-y-6 motion-safe:animate-pulse">
-      <div className="flex items-center gap-3">
-        <div className="w-14 h-14 rounded-full bg-gray-200" />
-        <div className="space-y-2">
-          <div className="h-6 bg-gray-200 rounded w-40" />
-          <div className="h-4 bg-gray-200 rounded w-24" />
-        </div>
-      </div>
-      <div className="space-y-3">
-        <div className="h-5 bg-gray-200 rounded w-24" />
-        <div className="h-16 bg-gray-200 rounded w-full" />
-        <div className="h-16 bg-gray-200 rounded w-full" />
-      </div>
-    </div>
-  )
-}

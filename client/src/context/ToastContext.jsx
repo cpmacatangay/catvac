@@ -50,13 +50,13 @@ function ToastItem({ toast, onClose }) {
 
   return (
     <div
-      className={`bg-white shadow-elevated rounded-lg p-4 max-w-sm border-l-4 ${borderColor} pointer-events-auto ${toast.leaving ? 'motion-safe:animate-slide-out' : 'motion-safe:animate-slide-in'}`}
+      className={`bg-white shadow-toast rounded-lg p-4 max-w-sm border-l-4 ${borderColor} pointer-events-auto ${toast.leaving ? 'motion-safe:animate-slide-out' : 'motion-safe:animate-slide-in'}`}
     >
       <div className="flex items-start gap-3">
         <p className="text-body-sm text-gray-800 flex-1">{toast.message}</p>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-600 shrink-0 p-0.5"
+          className="text-gray-400 hover:text-gray-600 shrink-0 inline-flex items-center justify-center h-11 w-11 rounded-lg"
           aria-label="Dismiss"
         >
           <XMarkIcon className="h-5 w-5" aria-hidden />

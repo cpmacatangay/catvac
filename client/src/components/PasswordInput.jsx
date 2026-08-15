@@ -16,7 +16,7 @@ export const PasswordInput = forwardRef(function PasswordInput({ className, erro
       <button
         type="button"
         onClick={() => setShow((p) => !p)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-md"
+        className="absolute right-1 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-md inline-flex items-center justify-center h-11 w-11"
         aria-label={show ? 'Hide password' : 'Show password'}
       >
         {show ? <EyeSlashIcon className="h-5 w-5" aria-hidden /> : <EyeIcon className="h-5 w-5" aria-hidden />}

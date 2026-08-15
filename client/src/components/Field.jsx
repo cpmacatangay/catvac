@@ -2,7 +2,7 @@ export function Field({ label, htmlFor, error, children }) {
   return (
     <div>
       {label && (
-        <label htmlFor={htmlFor} className="block font-semibold text-caption text-gray-700 mb-1 uppercase tracking-wider">
+        <label htmlFor={htmlFor} className="block font-semibold text-caption text-gray-700 mb-1">
           {label}
         </label>
       )}

@@ -7,6 +7,7 @@ import { useCat, useUpdateCat, useDeleteCat } from '../hooks/useCats.js'
 import { useVaccines, useCreateVaccine } from '../hooks/useVaccines.js'
 import { useToast } from '../context/ToastContext.jsx'
 import { catSchema, vaccineSchema } from '../lib/validators.js'
+import { sexLabel } from '../lib/format.js'
 import { Button } from '../components/Button.jsx'
 import { VaccineRow } from '../components/VaccineRow.jsx'
 import { ConfirmDialog } from '../components/ConfirmDialog.jsx'
@@ -126,7 +127,7 @@ export function CatDetailPage() {
               <div className="min-w-0">
                 <h1 className="font-heading text-h2 text-gray-800 truncate">{cat.name}</h1>
                 <p className="text-body-sm text-gray-500 truncate">
-                  {[cat.breed, cat.sex].filter(Boolean).join(' · ') || 'Cat'}
+                  {[cat.breed, sexLabel(cat.sex)].filter(Boolean).join(' · ') || 'Cat'}
                 </p>
               </div>
             </div>
@@ -169,7 +170,7 @@ export function CatDetailPage() {
           </Field>
           <Field label="Sex" htmlFor="edit-sex" error={editForm.formState.errors.sex?.message}>
             <Select id="edit-sex" {...editForm.register('sex')} error={editForm.formState.errors.sex}>
-              <option value="">—</option>
+              <option value="">Not set</option>
               <option value="M">Male</option>
               <option value="F">Female</option>
             </Select>

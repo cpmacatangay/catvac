@@ -2,6 +2,12 @@ export function formatDate(date) {
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(date))
 }
 
+export function sexLabel(sex) {
+  if (sex === 'M') return 'Male'
+  if (sex === 'F') return 'Female'
+  return sex || ''
+}
+
 export function formatRelative(date) {
   const now = new Date()
   const target = new Date(date)

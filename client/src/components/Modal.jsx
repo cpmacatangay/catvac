@@ -71,7 +71,7 @@ export function Modal({ open, onClose, title, children }) {
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 p-1 rounded-lg focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+            className="text-gray-400 hover:text-gray-600 inline-flex items-center justify-center h-11 w-11 rounded-lg focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
             aria-label="Close"
           >
             <XMarkIcon className="h-6 w-6" aria-hidden />

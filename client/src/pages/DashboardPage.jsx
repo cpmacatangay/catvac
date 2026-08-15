@@ -16,6 +16,7 @@ import { Input } from '../components/Input.jsx'
 import { Select } from '../components/Select.jsx'
 import { Textarea } from '../components/Textarea.jsx'
 import { Logo } from '../components/Logo.jsx'
+import { statusRank, worstStatus } from '../lib/status.js'
 
 export function DashboardPage() {
   const { data: cats, isLoading, error } = useDashboard()
@@ -75,12 +76,29 @@ export function DashboardPage() {
     )
   }
 
+  const sortedCats = [...(cats || [])].sort(
+    (a, b) => statusRank(worstStatus(b.vaccines)) - statusRank(worstStatus(a.vaccines)),
+  )
+  const overdue = (cats || []).reduce(
+    (n, { vaccines }) => n + (vaccines || []).filter((v) => v.status === 'overdue').length,
+    0,
+  )
+  const due = (cats || []).reduce(
+    (n, { vaccines }) => n + (vaccines || []).filter((v) => v.status === 'due').length,
+    0,
+  )
+  const summary =
+    overdue > 0 || due > 0
+      ? [overdue > 0 ? `${overdue} overdue` : null, due > 0 ? `${due} due` : null]
+          .filter(Boolean)
+          .join(' · ')
+      : 'All protected'
+
   return (
     <div className="max-w-[1200px] mx-auto px-4 md:px-6 lg:px-8 py-8 space-y-6 md:space-y-8">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-heading text-h1 text-gray-800">My Cats</h1>
-          <p className="text-subtitle text-gray-500">Never miss a jab.</p>
         </div>
         <Button
           variant="primary"
@@ -90,8 +108,14 @@ export function DashboardPage() {
         </Button>
       </header>
 
+      {cats && cats.length > 0 && (
+        <p className={`text-body-sm ${overdue > 0 ? 'text-red-700' : due > 0 ? 'text-amber-700' : 'text-gray-500'}`}>
+          {summary}
+        </p>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {cats?.map(({ cat, vaccines }) => (
+        {sortedCats.map(({ cat, vaccines }) => (
           <CatCard
             key={cat._id}
             cat={cat}
@@ -126,7 +150,7 @@ export function DashboardPage() {
           </Field>
           <Field label="Sex" htmlFor="cat-sex" error={errors.sex?.message}>
             <Select id="cat-sex" {...register('sex')} error={errors.sex}>
-              <option value="">—</option>
+              <option value="">Not set</option>
               <option value="M">Male</option>
               <option value="F">Female</option>
             </Select>
