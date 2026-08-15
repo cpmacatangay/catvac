@@ -217,8 +217,6 @@ No table layouts anywhere. Each cat renders as a **card** on every viewport.
 
 | Token | px | Tailwind | Usage |
 |---|---|---|---|
-| Token | px | Tailwind | Usage |
-|---|---|---|---|---|
 | sm | 4 | `rounded-sm` | Small badges, decorative |
 | md | 8 | `rounded-md` | Secondary cards |
 | lg | 12 | `rounded-lg` | Buttons, main cat cards, modals, input fields |
@@ -272,7 +270,7 @@ All animations respect `prefers-reduced-motion` (see accessibility).
 | Card hover | Scale 1.01 + shadow lift | 200ms | ease-out |
 | Button hover | Background tint | 150ms | ease |
 | Modal overlay | Fade in | 200ms | ease-out |
-| Modal content | Scale 0.95 → 1.00 + fade | 250ms | ease-out |
+| Modal content | Fade in | 200ms | ease-out |
 | Toast enter | Slide in from top-right | 300ms | ease-out |
 | Toast exit | Fade out | 200ms | ease-in |
 | Status pill | Background flash on change | 300ms | ease |
@@ -289,11 +287,11 @@ No keyframe-heavy or distracting animations. Purpose: smooth feedback, not showm
 
 | Variant | Style | Radius |
 |---|---|---|
-| Primary (filled) | `bg-primary text-white hover:bg-primary-hover` | `rounded-md` |
-| Secondary (outline) | `border border-gray-300 text-gray-700 hover:bg-gray-50` | `rounded-md` |
-| Ghost | `text-gray-600 hover:text-gray-800 hover:bg-gray-100` | `rounded-md` |
-| Danger | `bg-red-600 text-white hover:bg-red-700` | `rounded-md` |
-| Icon | `p-2.5 text-gray-500 hover:text-primary hover:bg-violet-50` | `rounded-lg` |
+| Primary (filled) | `bg-primary text-white hover:bg-primary-hover` | `rounded-lg` |
+| Secondary (outline) | `border border-gray-300 text-gray-700 hover:bg-gray-50` | `rounded-lg` |
+| Ghost | `text-gray-600 hover:text-gray-800 hover:bg-gray-100` | `rounded-lg` |
+| Danger | `bg-red-600 text-white hover:bg-red-700` | `rounded-lg` |
+| Icon | `p-2.5 min-w-[44px] text-gray-500 hover:text-primary hover:bg-violet-50` | `rounded-lg` |
 
 - All buttons: `focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2`
 - Min height: 48px (tap target, WCAG >=44px).
@@ -309,16 +307,18 @@ No keyframe-heavy or distracting animations. Purpose: smooth feedback, not showm
 - Background: white
 - Placeholder: `text-gray-400`
 - Error: `border-red-500 ring-1 ring-red-500`, helper text in `text-red-600 text-body-sm`
-- Label: `text-caption font-semibold text-gray-700 mb-1 uppercase tracking-wider`
+- Label: `text-caption font-semibold text-gray-700 mb-1`
 
 ### Status Pills (badges)
 
-| Status | Style | Icon |
-|---|---|---|
-| Upcoming | `bg-blue-100 text-blue-700 border border-blue-200` | `clock` |
-| Due | `bg-amber-100 text-amber-700 border border-amber-200` | `exclamation` |
-| Overdue | `bg-red-100 text-red-700 border border-red-200` | `exclamation-circle` |
-| Administered | `bg-green-100 text-green-700 border border-green-200` | `check` |
+| Status | Label | Style | Dot |
+|---|---|---|---|
+| `on-track` | On track | `bg-green-100 text-green-700 border border-green-200` | `bg-green-500` |
+| `upcoming` | Upcoming | `bg-blue-100 text-blue-700 border border-blue-200` | `bg-blue-500` |
+| `due` | Due | `bg-amber-100 text-amber-700 border border-amber-200` | `bg-amber-500` |
+| `overdue` | Overdue | `bg-red-100 text-red-700 border border-red-200` | `bg-red-500` |
+| `administered` | Done | `bg-green-100 text-green-700 border border-green-200` | `bg-green-500` |
+| `snoozed` | Snoozed | `bg-purple-100 text-purple-700 border border-purple-200` | `bg-purple-500` |
 
 Pills: `inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-badge font-bold uppercase tracking-wider` with a leading `h-2 w-2 rounded-full` color dot (status indicator, `aria-hidden`).
 
@@ -332,9 +332,9 @@ Pills: `inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-badge font-
 └──────────────────────┘
 ```
 - Background: white with left purple accent border
-- Shadow: `shadow-elevated`
-- Max width: 448px (`max-w-md`)
-- Dissmiss: auto 5s, or X button, or tap
+- Shadow: `shadow-toast`
+- Max width: 384px (`max-w-sm`)
+- Dismiss: auto 5s, or X button, or tap
 
 ### Modals
 
