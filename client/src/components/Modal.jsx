@@ -1,13 +1,31 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useId } from 'react'
 import { createPortal } from 'react-dom'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 
 export function Modal({ open, onClose, title, children }) {
   const dialogRef = useRef(null)
+  const titleId = useId()
 
   const handleKeyDown = useCallback(
     (e) => {
-      if (e.key === 'Escape') onClose?.()
+      if (e.key === 'Escape') {
+        onClose?.()
+        return
+      }
+      if (e.key !== 'Tab') return
+      const focusables = dialogRef.current?.querySelectorAll(
+        'button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )
+      if (!focusables || focusables.length === 0) return
+      const first = focusables[0]
+      const last = focusables[focusables.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
     },
     [onClose],
   )
@@ -45,10 +63,10 @@ export function Modal({ open, onClose, title, children }) {
         className="relative bg-white rounded-xl shadow-elevated p-6 w-full max-w-lg motion-safe:animate-fade-in space-y-5 max-h-[90vh] overflow-y-auto"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="modal-title"
+        aria-labelledby={titleId}
       >
         <div className="flex items-center justify-between">
-          <h2 id="modal-title" className="font-heading text-h3 text-gray-800">
+          <h2 id={titleId} className="font-heading text-h3 text-gray-800">
             {title}
           </h2>
           <button

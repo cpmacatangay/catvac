@@ -41,17 +41,21 @@ describe('ToastContext', () => {
     expect(screen.getByText('Hello')).toBeInTheDocument()
 
     act(() => { vi.advanceTimersByTime(5000) })
+    act(() => { vi.advanceTimersByTime(200) })
     expect(screen.queryByText('Hello')).not.toBeInTheDocument()
     vi.useRealTimers()
   })
 
   it('dismisses toast when close button is clicked', () => {
+    vi.useFakeTimers()
     renderWithProvider(<TestConsumer />)
     fireEvent.click(screen.getByText('Add success'))
     expect(screen.getByText('Hello')).toBeInTheDocument()
 
     fireEvent.click(screen.getByLabelText('Dismiss'))
+    act(() => { vi.advanceTimersByTime(200) })
     expect(screen.queryByText('Hello')).not.toBeInTheDocument()
+    vi.useRealTimers()
   })
 
   it('throws useToast when used outside provider', () => {

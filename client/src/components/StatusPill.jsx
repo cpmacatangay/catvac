@@ -7,11 +7,11 @@ import {
 } from '@heroicons/react/24/outline'
 
 const STATUS_CONFIG = {
-  'on-track': { bg: 'bg-green-100 text-green-700 border border-green-200', dot: 'bg-green-500', Icon: CheckCircleIcon, label: 'OK' },
+  'on-track': { bg: 'bg-gray-100 text-gray-600 border border-gray-200', dot: 'bg-gray-400', Icon: CheckCircleIcon, label: 'On track' },
   upcoming: { bg: 'bg-blue-100 text-blue-700 border border-blue-200', dot: 'bg-blue-500', Icon: ClockIcon, label: 'Upcoming' },
   due: { bg: 'bg-amber-100 text-amber-700 border border-amber-200', dot: 'bg-amber-500', Icon: ExclamationTriangleIcon, label: 'Due' },
   overdue: { bg: 'bg-red-100 text-red-700 border border-red-200', dot: 'bg-red-500', Icon: ExclamationCircleIcon, label: 'Overdue' },
-  administered: { bg: 'bg-green-100 text-green-700 border border-green-200', dot: 'bg-green-500', Icon: CheckCircleIcon, label: 'Done' },
+  administered: { bg: 'bg-green-600 text-white border border-green-600', dot: 'bg-white', Icon: CheckCircleIcon, label: 'Done' },
   snoozed: { bg: 'bg-purple-100 text-purple-700 border border-purple-200', dot: 'bg-purple-500', Icon: ArrowPathIcon, label: 'Snoozed' },
 }
 

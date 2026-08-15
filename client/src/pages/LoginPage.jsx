@@ -7,7 +7,7 @@ import { Field } from '../components/Field.jsx'
 import { Input } from '../components/Input.jsx'
 import { PasswordInput } from '../components/PasswordInput.jsx'
 import { loginSchema } from '../lib/validators.js'
-import { LogoWordmark } from '../components/Logo.jsx'
+import { LogoWordmark, Logo } from '../components/Logo.jsx'
 
 export function LoginPage() {
   const { login } = useAuth()
@@ -35,8 +35,9 @@ export function LoginPage() {
     <div className="min-h-screen flex items-start sm:items-center justify-center px-4 pt-12 sm:pt-0">
       <div className="w-full max-w-sm">
         <div className="text-center mb-2">
+          <Logo className="h-14 w-14 mx-auto mb-3" />
           <LogoWordmark size="text-hero" />
-          <p className="text-body-sm text-gray-400 mt-1">Never miss a jab.</p>
+          <p className="text-body-sm text-gray-600 mt-1">Never miss a jab.</p>
         </div>
 
         <form

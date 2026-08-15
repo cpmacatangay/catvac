@@ -17,5 +17,7 @@ android/key.properties
 android/app/google-services.json
 android/app/release/
 
-.vscode/settings.json
+.vscode/
+.impeccable/
 .opencode/
+client/plans/

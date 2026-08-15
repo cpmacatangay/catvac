@@ -16,17 +16,18 @@ let nextId = 0
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
 
-  const addToast = useCallback((message, type = 'success') => {
-    const id = ++nextId
-    setToasts((prev) => [...prev, { id, message, type }])
+  const dismissToast = useCallback((id) => {
+    setToasts((prev) => prev.map((t) => (t.id === id ? { ...t, leaving: true } : t)))
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id))
-    }, 5000)
+    }, 200)
   }, [])
 
-  const removeToast = useCallback((id) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id))
-  }, [])
+  const addToast = useCallback((message, type = 'success') => {
+    const id = ++nextId
+    setToasts((prev) => [...prev, { id, message, type, leaving: false }])
+    setTimeout(() => dismissToast(id), 5000)
+  }, [dismissToast])
 
   return (
     <ToastContext.Provider value={{ addToast }}>
@@ -37,7 +38,7 @@ export function ToastProvider({ children }) {
         role="status"
       >
         {toasts.map((toast) => (
-          <ToastItem key={toast.id} toast={toast} onClose={() => removeToast(toast.id)} />
+          <ToastItem key={toast.id} toast={toast} onClose={() => dismissToast(toast.id)} />
         ))}
       </div>
     </ToastContext.Provider>
@@ -49,7 +50,7 @@ function ToastItem({ toast, onClose }) {
 
   return (
     <div
-      className={`bg-white shadow-elevated rounded-lg p-4 max-w-sm border-l-4 ${borderColor} pointer-events-auto motion-safe:animate-slide-in`}
+      className={`bg-white shadow-elevated rounded-lg p-4 max-w-sm border-l-4 ${borderColor} pointer-events-auto ${toast.leaving ? 'motion-safe:animate-slide-out' : 'motion-safe:animate-slide-in'}`}
     >
       <div className="flex items-start gap-3">
         <p className="text-body-sm text-gray-800 flex-1">{toast.message}</p>

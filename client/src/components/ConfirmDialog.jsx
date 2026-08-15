@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useId } from 'react'
 import { createPortal } from 'react-dom'
 import { Button } from './Button.jsx'
 
@@ -13,10 +13,28 @@ export function ConfirmDialog({
   onCancel,
 }) {
   const dialogRef = useRef(null)
+  const titleId = useId()
 
   const handleKeyDown = useCallback(
     (e) => {
-      if (e.key === 'Escape') onCancel?.()
+      if (e.key === 'Escape') {
+        onCancel?.()
+        return
+      }
+      if (e.key !== 'Tab') return
+      const focusables = dialogRef.current?.querySelectorAll(
+        'button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )
+      if (!focusables || focusables.length === 0) return
+      const first = focusables[0]
+      const last = focusables[focusables.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
     },
     [onCancel],
   )
@@ -43,9 +61,9 @@ export function ConfirmDialog({
         className="relative bg-white rounded-xl shadow-elevated p-6 max-w-sm w-full motion-safe:animate-fade-in space-y-4"
         role="alertdialog"
         aria-modal="true"
-        aria-labelledby="confirm-title"
+        aria-labelledby={titleId}
       >
-        <h3 id="confirm-title" className="font-heading text-subtitle text-gray-800">
+        <h3 id={titleId} className="font-heading text-subtitle text-gray-800">
           {title}
         </h3>
         {message && <p className="text-body-sm text-gray-600">{message}</p>}

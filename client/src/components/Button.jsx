@@ -16,7 +16,7 @@ const VARIANT_CLASSES = {
 }
 
 const COMMON =
-  'inline-flex items-center justify-center rounded-lg min-h-[48px] transition-colors focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+  'inline-flex items-center justify-center rounded-lg min-h-[48px] transition-[color,background-color,border-color,scale] duration-[160ms] ease-out active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
 
 function Spinner() {
   return (

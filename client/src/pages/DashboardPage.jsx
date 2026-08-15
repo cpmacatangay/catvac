@@ -15,6 +15,7 @@ import { Field } from '../components/Field.jsx'
 import { Input } from '../components/Input.jsx'
 import { Select } from '../components/Select.jsx'
 import { Textarea } from '../components/Textarea.jsx'
+import { Logo } from '../components/Logo.jsx'
 
 export function DashboardPage() {
   const { data: cats, isLoading, error } = useDashboard()
@@ -101,9 +102,17 @@ export function DashboardPage() {
       </div>
 
       {(!cats || cats.length === 0) && (
-        <div className="text-center py-16 text-gray-400">
-          <p className="text-h2 mb-2">No cats yet</p>
-          <p className="text-body-sm">Add your first cat to start tracking vaccines</p>
+        <div className="flex flex-col items-center text-center py-16">
+          <div className="w-16 h-16 rounded-2xl bg-primary-light flex items-center justify-center mb-5">
+            <Logo className="h-9 w-9" />
+          </div>
+          <h2 className="font-heading text-h2 text-gray-800 mb-2">No cats yet</h2>
+          <p className="text-body-sm text-gray-500 max-w-sm mb-6">
+            Add your first cat and we'll track every vaccine and remind you before it's due.
+          </p>
+          <Button variant="primary" onClick={() => { setShowForm(true); reset() }}>
+            <PlusIcon className="h-5 w-5" aria-hidden /> Add your first cat
+          </Button>
         </div>
       )}
 

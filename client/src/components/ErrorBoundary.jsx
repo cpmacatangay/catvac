@@ -1,4 +1,6 @@
 import { Component } from 'react'
+import { Button } from './Button.jsx'
+import { Logo } from './Logo.jsx'
 
 export class ErrorBoundary extends Component {
   constructor(props) {
@@ -10,6 +12,10 @@ export class ErrorBoundary extends Component {
     return { error }
   }
 
+  componentDidCatch(error, info) {
+    console.error(error, info)
+  }
+
   handleReset() {
     this.setState({ error: null })
   }
@@ -19,14 +25,19 @@ export class ErrorBoundary extends Component {
       return (
         <div className="min-h-screen flex items-center justify-center p-8 bg-violet-50">
           <div className="bg-white rounded-xl shadow-elevated p-8 max-w-md w-full text-center space-y-4">
+            <Logo className="h-12 w-12 mx-auto" />
             <h1 className="font-heading text-h1 text-gray-800">Something went wrong</h1>
-            <p className="text-body-sm text-gray-600">{this.state.error.message}</p>
-            <button
-              onClick={() => this.handleReset()}
-              className="inline-flex items-center justify-center rounded-lg px-5 py-3 min-h-[48px] font-semibold text-button bg-primary text-white hover:bg-primary-hover transition-colors"
-            >
-              Try again
-            </button>
+            <p className="text-body-sm text-gray-500">
+              We couldn't load that screen. Please try again.
+            </p>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <Button variant="primary" onClick={() => this.handleReset()}>
+                Try again
+              </Button>
+              <Button variant="secondary" onClick={() => window.location.reload()}>
+                Reload page
+              </Button>
+            </div>
           </div>
         </div>
       )

@@ -8,6 +8,10 @@ export default {
           '0%': { transform: 'translateX(100%)', opacity: '0' },
           '100%': { transform: 'translateX(0)', opacity: '1' },
         },
+        'slide-out': {
+          '0%': { transform: 'translateX(0)', opacity: '1' },
+          '100%': { transform: 'translateX(100%)', opacity: '0' },
+        },
         'fade-in': {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
@@ -15,6 +19,7 @@ export default {
       },
       animation: {
         'slide-in': 'slide-in 300ms ease-out',
+        'slide-out': 'slide-out 200ms ease-out',
         'fade-in': 'fade-in 200ms ease-out',
       },
       colors: {

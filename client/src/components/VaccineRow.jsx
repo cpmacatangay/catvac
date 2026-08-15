@@ -16,6 +16,7 @@ export function VaccineRow({ vaccine }) {
   const remove = useDeleteVaccine()
   const { addToast } = useToast()
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [confirmAdminister, setConfirmAdminister] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
   const [editName, setEditName] = useState(vaccine.name)
   const [editDueDate, setEditDueDate] = useState(vaccine.dueDate.split('T')[0])
@@ -56,7 +57,7 @@ function openEdit() {
     <div className="bg-white rounded-lg p-5 shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
       <div className="min-w-0">
         <p className="text-body font-semibold text-gray-800 truncate">{vaccine.name}</p>
-        <p className="text-body-sm text-gray-400">
+        <p className="text-body-sm text-gray-500">
           Due: {new Date(vaccine.dueDate).toLocaleDateString()}
           {vaccine.intervalMonths && ` · Every ${vaccine.intervalMonths}mo`}
         </p>
@@ -80,14 +81,7 @@ function openEdit() {
               variant="icon"
               tone="success"
               disabled={administer.isPending}
-              onClick={async () => {
-                try {
-                  await administer.mutateAsync({ id: vaccine._id, catId: vaccine.catId })
-                  addToast(`${vaccine.name} marked administered`, 'success')
-                } catch (err) {
-                  addToast(err.message, 'error')
-                }
-              }}
+              onClick={() => setConfirmAdminister(true)}
               title="Mark administered"
               aria-label="Mark administered"
             >
@@ -141,6 +135,24 @@ function openEdit() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={confirmAdminister}
+        title={`Mark ${vaccine.name} administered?`}
+        message="This records the shot as done and may schedule the next dose."
+        confirmLabel="Mark done"
+        variant="primary"
+        onConfirm={async () => {
+          setConfirmAdminister(false)
+          try {
+            await administer.mutateAsync({ id: vaccine._id, catId: vaccine.catId })
+            addToast(`${vaccine.name} marked administered`, 'success')
+          } catch (err) {
+            addToast(err.message, 'error')
+          }
+        }}
+        onCancel={() => setConfirmAdminister(false)}
+      />
 
       <ConfirmDialog
         open={confirmDelete}

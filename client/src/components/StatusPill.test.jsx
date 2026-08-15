@@ -20,6 +20,6 @@ describe('StatusPill', () => {
 
   it('falls back to on-track for unknown status', () => {
     render(<StatusPill status="unknown" />)
-    expect(screen.getByText('OK')).toBeInTheDocument()
+    expect(screen.getByText('On track')).toBeInTheDocument()
   })
 })

@@ -125,7 +125,7 @@ export function CatDetailPage() {
               </div>
               <div className="min-w-0">
                 <h1 className="font-heading text-h2 text-gray-800 truncate">{cat.name}</h1>
-                <p className="text-body-sm text-gray-400 truncate">
+                <p className="text-body-sm text-gray-500 truncate">
                   {[cat.breed, cat.sex].filter(Boolean).join(' · ') || 'Cat'}
                 </p>
               </div>
@@ -148,7 +148,10 @@ export function CatDetailPage() {
           <VaccineRow key={v._id} vaccine={v} />
         ))}
         {vaccines?.length === 0 && (
-          <p className="text-gray-400 text-body text-center py-8">No vaccines yet</p>
+          <div className="text-center py-8 space-y-1">
+            <p className="text-body text-gray-600">No vaccines yet</p>
+            <p className="text-body-sm text-gray-500">Add the first dose to start tracking reminders.</p>
+          </div>
         )}
       </div>
 

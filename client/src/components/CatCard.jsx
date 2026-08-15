@@ -20,7 +20,7 @@ export function CatCard({ cat, vaccines, onClick }) {
       onKeyDown={handleKeyDown}
       role="button"
       tabIndex={0}
-      className="bg-white rounded-lg p-4 md:p-6 shadow-card hover:shadow-card-hover transition-all duration-200 motion-safe:hover:scale-[1.01] cursor-pointer text-left w-full focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+      className="bg-white rounded-lg p-4 md:p-6 shadow-card hover:shadow-card-hover transition-[box-shadow,scale] duration-200 motion-safe:hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-left w-full focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
     >
       <div className="flex items-center gap-4 mb-4">
         <div className="w-14 h-14 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-h3 shrink-0">
@@ -28,7 +28,7 @@ export function CatCard({ cat, vaccines, onClick }) {
         </div>
         <div className="min-w-0">
           <h3 className="font-heading text-h2 text-gray-800 truncate">{cat.name}</h3>
-          <p className="text-body-sm text-gray-400 truncate">
+          <p className="text-body-sm text-gray-500 truncate">
             {[cat.breed, cat.sex].filter(Boolean).join(' · ') || 'Cat'}
           </p>
         </div>
@@ -42,7 +42,7 @@ export function CatCard({ cat, vaccines, onClick }) {
           </div>
         ))}
         {sorted.length > 5 && (
-          <p className="text-caption text-gray-400">+{sorted.length - 5} more</p>
+          <p className="text-caption text-gray-500">+{sorted.length - 5} more</p>
         )}
       </div>
     </div>
