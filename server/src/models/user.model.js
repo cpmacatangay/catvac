@@ -23,11 +23,10 @@ const userSchema = new mongoose.Schema(
   { timestamps: { createdAt: true, updatedAt: false } },
 )
 
-userSchema.pre('save', function (next) {
+userSchema.pre('save', function () {
   if (this.isModified('passwordHash') && this.passwordHash.length !== 60) {
-    return next(new Error('passwordHash must be a bcrypt hash (60 chars)'))
+    throw new Error('passwordHash must be a bcrypt hash (60 chars)')
   }
-  next()
 })
 
 export const User = mongoose.model('User', userSchema)

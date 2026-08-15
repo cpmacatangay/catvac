@@ -44,7 +44,7 @@ export function createApp() {
 
   const authLimiter = rateLimit({
     windowMs: AUTH_LIMIT_WINDOW_MS,
-    max: AUTH_LIMIT_MAX,
+    limit: AUTH_LIMIT_MAX,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: { message: 'Too many requests, please try again later', code: 'RATE_LIMITED' } },
@@ -52,7 +52,7 @@ export function createApp() {
 
   const globalLimiter = rateLimit({
     windowMs: GLOBAL_LIMIT_WINDOW_MS,
-    max: GLOBAL_LIMIT_MAX,
+    limit: GLOBAL_LIMIT_MAX,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: { message: 'Too many requests', code: 'RATE_LIMITED' } },

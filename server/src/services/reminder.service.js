@@ -71,7 +71,7 @@ export class ReminderService {
     }
 
     try {
-      await this.mailer.send({
+      await this.mailer.sendMail({
         to: user.email,
         subject: this.getSubject(type, vaccine),
         html: this.getTemplate(type, vaccine, user),

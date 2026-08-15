@@ -68,7 +68,7 @@ const makeUser = (prefs = {}) => ({
 })
 
 function mockMailer() {
-  return { send: vi.fn().mockResolvedValue(undefined) }
+  return { sendMail: vi.fn().mockResolvedValue(undefined) }
 }
 
 function mockPushService() {
